@@ -8,9 +8,9 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
-    { title: "Analysis", path: "/analysis" },
-    { title: "Dashboard", path: "/dashboard" },
-    { title: "History", path: "/history" },
+    { title: "Essay Analysis", path: "/analysis" },
+    { title: "Progress", path: "/dashboard" },
+    { title: "Essay Library", path: "/history" },
     { title: "Settings", path: "/settings" },
   ];
 
@@ -20,7 +20,7 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <span className="text-xl font-semibold gradient-text">WriteRight</span>
+              <span className="text-xl font-semibold gradient-text">WriteRight Essay</span>
             </Link>
           </div>
 

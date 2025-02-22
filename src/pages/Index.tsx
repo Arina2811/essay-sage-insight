@@ -1,45 +1,45 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, BarChart2, History, Settings, CheckCircle, Brain, Zap } from "lucide-react";
+import { FileText, BarChart2, History, Settings, CheckCircle, Brain, Target, Sparkles } from "lucide-react";
 
 const Index = () => {
   const features = [
     {
+      icon: Target,
+      title: "Smart Essay Analysis",
+      description: "Get instant feedback on essay structure, argumentation, and clarity",
+      path: "/analysis"
+    },
+    {
+      icon: Sparkles,
+      title: "Style Enhancement",
+      description: "Receive suggestions to improve your academic writing style",
+      path: "/analysis"
+    },
+    {
       icon: Brain,
-      title: "AI Writing Analysis",
-      description: "Get comprehensive feedback on style, structure, and coherence",
+      title: "Thesis Detection",
+      description: "Automatically identify and evaluate your thesis statement",
       path: "/analysis"
     },
     {
       icon: CheckCircle,
-      title: "Grammar & Style Check",
-      description: "Advanced grammar correction and style improvement suggestions",
-      path: "/analysis"
-    },
-    {
-      icon: Zap,
-      title: "Plagiarism Detection",
-      description: "Compare your text against millions of sources in real-time",
+      title: "Citation Checker",
+      description: "Verify proper citation format and academic integrity",
       path: "/analysis"
     },
     {
       icon: BarChart2,
-      title: "Analytics Dashboard",
-      description: "Track improvements and writing patterns over time",
+      title: "Progress Tracking",
+      description: "Monitor your essay writing improvements over time",
       path: "/dashboard"
     },
     {
-      icon: History,
-      title: "Writing History",
-      description: "Access past analyses and track your progress journey",
+      icon: FileText,
+      title: "Essay Library",
+      description: "Access your past essays and their evaluations",
       path: "/history"
-    },
-    {
-      icon: Settings,
-      title: "Custom Settings",
-      description: "Personalize analysis preferences and writing goals",
-      path: "/settings"
     }
   ];
 
@@ -52,15 +52,18 @@ const Index = () => {
               WriteRight
             </h1>
             <p className="text-xl text-muted-foreground">
-              Transform your writing with advanced analysis, 
-              grammar correction, and plagiarism detection
+              Advanced Essay Evaluation System
+            </p>
+            <p className="text-lg text-muted-foreground">
+              Get instant, comprehensive feedback on your essays with our 
+              intelligent detection and evaluation system
             </p>
             <div className="flex flex-wrap justify-center gap-4 pt-8">
               <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
-                <Link to="/analysis">Start Writing</Link>
+                <Link to="/analysis">Evaluate Essay</Link>
               </Button>
               <Button variant="outline" asChild size="lg" className="border-primary/20 hover:bg-primary/10">
-                <Link to="/dashboard">View Dashboard</Link>
+                <Link to="/dashboard">View Progress</Link>
               </Button>
             </div>
           </div>
@@ -94,12 +97,12 @@ const Index = () => {
       <div className="container mx-auto section-padding">
         <div className="max-w-4xl mx-auto text-center space-y-4">
           <h2 className="text-2xl md:text-3xl font-bold gradient-text">
-            Why Choose WriteRight?
+            Elevate Your Academic Writing
           </h2>
           <p className="text-muted-foreground">
-            Our advanced technology analyzes your writing from every angle, 
-            providing comprehensive feedback on grammar, style, coherence, and originality. 
-            Perfect for students, professionals, and anyone looking to elevate their writing.
+            Our intelligent essay evaluation system provides detailed feedback on structure,
+            argumentation, citations, and academic style. Perfect for students, researchers,
+            and academic professionals aiming for excellence in their writing.
           </p>
         </div>
       </div>
