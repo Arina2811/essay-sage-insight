@@ -50,14 +50,38 @@
   }
 
   .fade-in {
-    @apply animate-in fade-in duration-500;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out forwards;
   }
 
   .slide-in {
-    @apply animate-in slide-in-from-bottom duration-500;
+    opacity: 0;
+    animation: slideIn 0.5s ease-out forwards;
   }
 
   .card-gradient {
     @apply bg-gradient-to-br from-white/50 to-white/30;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
