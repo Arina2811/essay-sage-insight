@@ -49,10 +49,10 @@ const Index = () => {
         <div className="container mx-auto flex flex-col items-center justify-center min-h-[80vh] section-padding">
           <div className="text-center max-w-3xl mx-auto space-y-6 fade-in">
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight gradient-text">
-              ProsePerfect AI
+              WriteRight
             </h1>
             <p className="text-xl text-muted-foreground">
-              Transform your writing with advanced AI-powered analysis, 
+              Transform your writing with advanced analysis, 
               grammar correction, and plagiarism detection
             </p>
             <div className="flex flex-wrap justify-center gap-4 pt-8">
@@ -94,10 +94,10 @@ const Index = () => {
       <div className="container mx-auto section-padding">
         <div className="max-w-4xl mx-auto text-center space-y-4">
           <h2 className="text-2xl md:text-3xl font-bold gradient-text">
-            Why Choose ProsePerfect AI?
+            Why Choose WriteRight?
           </h2>
           <p className="text-muted-foreground">
-            Our advanced AI technology analyzes your writing from every angle, 
+            Our advanced technology analyzes your writing from every angle, 
             providing comprehensive feedback on grammar, style, coherence, and originality. 
             Perfect for students, professionals, and anyone looking to elevate their writing.
           </p>
