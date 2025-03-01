@@ -74,10 +74,10 @@ const Index = () => {
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight gradient-text text-glow">
               WriteRight
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="text-xl text-gray-800">
               Advanced Essay Evaluation System
             </p>
-            <p className="text-lg text-white/80 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-700 max-w-2xl mx-auto">
               Get instant, comprehensive feedback on your essays with our 
               intelligent detection and evaluation system that helps you achieve academic excellence
             </p>
@@ -85,7 +85,7 @@ const Index = () => {
               <Button asChild size="lg" className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all">
                 <Link to="/analysis">Evaluate Essay</Link>
               </Button>
-              <Button variant="outline" asChild size="lg" className="border-white/20 text-white hover:bg-white/10 backdrop-blur-sm">
+              <Button variant="outline" asChild size="lg" className="bg-white/80 border-gray-300 text-gray-800 hover:bg-gray-100">
                 <Link to="/dashboard">View Progress</Link>
               </Button>
             </div>
@@ -111,7 +111,7 @@ const Index = () => {
                   <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
                     {feature.title}
                   </h3>
-                  <p className="text-muted-foreground mt-2">
+                  <p className="text-gray-700 mt-2">
                     {feature.description}
                   </p>
                 </div>
@@ -123,10 +123,10 @@ const Index = () => {
 
       <div className="container mx-auto section-padding bg-gradient-to-r from-slate-900/50 to-purple-900/40 rounded-xl p-10 mb-16">
         <div className="max-w-4xl mx-auto text-center space-y-6">
-          <h2 className="text-2xl md:text-3xl font-bold gradient-text">
+          <h2 className="text-2xl md:text-3xl font-bold text-white">
             Elevate Your Academic Writing
           </h2>
-          <p className="text-white/80">
+          <p className="text-white text-opacity-90">
             Our intelligent essay evaluation system provides detailed feedback on structure,
             argumentation, citations, and academic style. Perfect for students, researchers,
             and academic professionals aiming for excellence in their writing.
