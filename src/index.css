@@ -7,25 +7,25 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
+    --background: 221 39% 11%;
+    --foreground: 210 40% 98%;
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 263 47% 54%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221 83% 53%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 263 47% 54%;
     --radius: 0.75rem;
   }
 
@@ -39,21 +39,21 @@
     font-family: 'Inter', sans-serif;
     background: linear-gradient(
       to bottom right,
-      hsl(210, 40%, 98%),
-      hsl(214, 32%, 91%),
-      hsl(221, 83%, 95%)
+      hsl(222, 47%, 11%),
+      hsl(222, 47%, 11%),
+      hsl(263, 47%, 14%)
     );
     background-attachment: fixed;
   }
 
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400;
   }
 }
 
 @layer utilities {
   .glass {
-    @apply backdrop-blur-lg bg-white/80 border border-white/20 shadow-lg;
+    @apply backdrop-blur-lg bg-white/5 border border-white/10 shadow-xl;
   }
   
   .section-padding {
@@ -73,16 +73,16 @@
   .card-gradient {
     background: linear-gradient(
       to bottom right,
-      rgba(255, 255, 255, 0.9),
-      rgba(255, 255, 255, 0.8)
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.02)
     );
   }
 
   .hero-gradient {
     background: radial-gradient(
       circle at center,
-      rgba(37, 99, 235, 0.15) 0%,
-      rgba(37, 99, 235, 0) 70%
+      rgba(124, 58, 237, 0.15) 0%,
+      rgba(124, 58, 237, 0) 70%
     );
   }
 }
