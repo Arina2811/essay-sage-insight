@@ -56,7 +56,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(235, 244, 255, 0.95));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9), rgba(235, 244, 255, 0.9));
   z-index: 1;
 }
 
@@ -68,7 +68,7 @@
 .feature-card {
   transition: all 0.3s ease;
   border: 1px solid rgba(225, 235, 245, 0.6);
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(255, 255, 255, 0.8);
 }
 
 .feature-card:hover {
