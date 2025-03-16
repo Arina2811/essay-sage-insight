@@ -35,6 +35,19 @@ const Navbar = () => {
                 {item.title}
               </Link>
             ))}
+            
+            <div className="flex items-center ml-4 space-x-3">
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/sign-in" className="text-gray-300 hover:text-primary">
+                  Sign In
+                </Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link to="/sign-up">
+                  Sign Up
+                </Link>
+              </Button>
+            </div>
           </div>
 
           {/* Mobile menu button */}
@@ -69,6 +82,23 @@ const Navbar = () => {
                 {item.title}
               </Link>
             ))}
+            
+            <div className="flex flex-col space-y-2 pt-2 pb-3 border-t border-gray-700">
+              <Link
+                to="/sign-in"
+                className="text-gray-300 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/sign-up"
+                className="bg-primary text-white block px-3 py-2 rounded-md text-base font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                Sign Up
+              </Link>
+            </div>
           </div>
         </div>
       )}

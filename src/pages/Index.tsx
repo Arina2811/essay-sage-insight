@@ -63,9 +63,15 @@ const Index = () => {
                 <Link to="/analysis">Evaluate Essay</Link>
               </Button>
               <Button variant="outline" asChild size="lg" className="border-primary/20 hover:bg-primary/10">
-                <Link to="/dashboard">View Progress</Link>
+                <Link to="/sign-up">Create Account</Link>
               </Button>
             </div>
+            <p className="text-sm text-muted-foreground pt-2">
+              Already have an account?{" "}
+              <Link to="/sign-in" className="text-primary hover:underline">
+                Sign in
+              </Link>
+            </p>
           </div>
         </div>
       </div>
@@ -104,6 +110,12 @@ const Index = () => {
             argumentation, citations, and academic style. Perfect for students, researchers,
             and academic professionals aiming for excellence in their writing.
           </p>
+          
+          <div className="pt-6">
+            <Button asChild>
+              <Link to="/sign-up">Get Started Today</Link>
+            </Button>
+          </div>
         </div>
       </div>
     </div>

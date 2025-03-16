@@ -10,6 +10,10 @@ import Analysis from "./pages/Analysis";
 import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import Settings from "./pages/Settings";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +33,10 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/history" element={<History />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/sign-in" element={<SignIn />} />
+              <Route path="/sign-up" element={<SignUp />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
