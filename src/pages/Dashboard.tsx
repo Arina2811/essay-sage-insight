@@ -1,23 +1,68 @@
 
 import { Card } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Progress } from "@/components/ui/progress";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
+} from "recharts";
+import { 
+  ChartContainer, 
+  ChartTooltip, 
+  ChartTooltipContent 
+} from "@/components/ui/chart";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Dashboard = () => {
   // Placeholder data for demonstration
-  const data = [
+  const progressData = [
     { date: "Jan 1", score: 65 },
     { date: "Jan 15", score: 70 },
     { date: "Feb 1", score: 75 },
     { date: "Feb 15", score: 72 },
     { date: "Mar 1", score: 78 },
     { date: "Mar 15", score: 82 },
+    { date: "Apr 1", score: 85 },
   ];
+
+  const categoryScores = [
+    { name: "Structure", score: 75 },
+    { name: "Clarity", score: 82 },
+    { name: "Arguments", score: 68 },
+    { name: "Grammar", score: 90 },
+    { name: "Citations", score: 65 },
+  ];
+
+  const pieData = [
+    { name: "Strong Points", value: 65 },
+    { name: "Areas to Improve", value: 35 },
+  ];
+
+  const COLORS = ["#4f46e5", "#f97316", "#06b6d4", "#10b981", "#8b5cf6"];
+  const PIE_COLORS = ["#10b981", "#f97316"];
 
   const stats = [
     { label: "Essays Analyzed", value: "12" },
     { label: "Average Score", value: "78/100" },
     { label: "Improvement", value: "+15%" },
     { label: "Writing Time", value: "4.2 hrs" },
+  ];
+
+  const skills = [
+    { name: "Structure", progress: 75 },
+    { name: "Clarity", progress: 82 },
+    { name: "Citations", progress: 65 },
+    { name: "Argumentation", progress: 68 },
   ];
 
   return (
@@ -39,24 +84,139 @@ const Dashboard = () => {
           ))}
         </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="p-6 glass">
+            <h2 className="text-lg font-semibold mb-4">Writing Progress</h2>
+            <div className="h-[300px]">
+              <ChartContainer
+                config={{
+                  score: { color: "hsl(var(--primary))" },
+                  grid: { color: "hsl(var(--border))" }
+                }}
+              >
+                <LineChart data={progressData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis domain={[50, 100]} />
+                  <ChartTooltip
+                    content={<ChartTooltipContent />}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="score"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ChartContainer>
+            </div>
+          </Card>
+
+          <Card className="p-6 glass">
+            <h2 className="text-lg font-semibold mb-4">Essay Component Analysis</h2>
+            <div className="h-[300px]">
+              <ChartContainer
+                config={{
+                  score: { color: "hsl(var(--primary))" },
+                  grid: { color: "hsl(var(--border))" }
+                }}
+              >
+                <BarChart data={categoryScores}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis domain={[0, 100]} />
+                  <ChartTooltip
+                    content={<ChartTooltipContent />}
+                  />
+                  <Bar dataKey="score" fill="hsl(var(--primary))">
+                    {categoryScores.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ChartContainer>
+            </div>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="p-6 glass col-span-1">
+            <h2 className="text-lg font-semibold mb-4">Essay Strength Analysis</h2>
+            <div className="h-[250px]">
+              <ChartContainer
+                config={{
+                  score: { color: "hsl(var(--primary))" },
+                  grid: { color: "hsl(var(--border))" }
+                }}
+              >
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Legend />
+                </PieChart>
+              </ChartContainer>
+            </div>
+          </Card>
+
+          <Card className="p-6 glass col-span-2">
+            <h2 className="text-lg font-semibold mb-4">Writing Skills Progress</h2>
+            <div className="space-y-5">
+              {skills.map((skill) => (
+                <div key={skill.name} className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>{skill.name}</span>
+                    <span className="font-medium">{skill.progress}%</span>
+                  </div>
+                  <Progress value={skill.progress} className="h-2" />
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+
         <Card className="p-6 glass">
-          <h2 className="text-lg font-semibold mb-4">Writing Progress</h2>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="score"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <h2 className="text-lg font-semibold mb-4">Recent Essay Analysis</h2>
+          <Tabs defaultValue="feedback">
+            <TabsList className="mb-4">
+              <TabsTrigger value="feedback">Smart Feedback</TabsTrigger>
+              <TabsTrigger value="style">Style</TabsTrigger>
+              <TabsTrigger value="thesis">Thesis</TabsTrigger>
+              <TabsTrigger value="citations">Citations</TabsTrigger>
+              <TabsTrigger value="plagiarism">Plagiarism</TabsTrigger>
+            </TabsList>
+            <TabsContent value="feedback" className="space-y-4">
+              <h3 className="font-medium">Essay Structure Analysis</h3>
+              <p className="text-muted-foreground">Your essay has a clear introduction, body, and conclusion. The thesis is well-stated, but could be more specific. Each paragraph focuses on a single idea, which is excellent. Consider adding more transitions between paragraphs to improve flow.</p>
+            </TabsContent>
+            <TabsContent value="style" className="space-y-4">
+              <h3 className="font-medium">Academic Style Suggestions</h3>
+              <p className="text-muted-foreground">Your writing demonstrates good academic tone. Consider reducing use of passive voice (found in 25% of sentences). Academic vocabulary is appropriate, though adding more field-specific terminology would strengthen your argument.</p>
+            </TabsContent>
+            <TabsContent value="thesis" className="space-y-4">
+              <h3 className="font-medium">Thesis Evaluation</h3>
+              <p className="text-muted-foreground">Your thesis statement appears in paragraph 1: "Technology has dramatically altered how we interact with information." This thesis is clear but somewhat broad. Consider narrowing your focus to a specific aspect of technology and information interaction.</p>
+            </TabsContent>
+            <TabsContent value="citations" className="space-y-4">
+              <h3 className="font-medium">Citation Format</h3>
+              <p className="text-muted-foreground">Found 8 citations in your essay. All citations follow APA 7th edition format correctly. Two sources appear dated (over 10 years old) - consider finding more recent research to strengthen your argument.</p>
+            </TabsContent>
+            <TabsContent value="plagiarism" className="space-y-4">
+              <h3 className="font-medium">Plagiarism Check</h3>
+              <p className="text-muted-foreground">Originality score: 98%. No significant matches found against our database. One sentence shows minor similarity (15%) to a commonly used phrase in academic writing - this is not concerning.</p>
+            </TabsContent>
+          </Tabs>
         </Card>
       </div>
     </div>
