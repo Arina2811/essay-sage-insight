@@ -33,7 +33,9 @@ export interface EssayAnalysisResult {
 }
 
 export interface EssayData {
+  id?: string;
   title: string;
   content: string;
   analysis?: EssayAnalysisResult;
+  created_at?: string;
 }
