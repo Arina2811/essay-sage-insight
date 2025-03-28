@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,7 +8,8 @@ import { toast } from "sonner";
 import { Loader2, FileCheck, AlertTriangle, CheckCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EssayAnalysisService, EssayAnalysisResult } from "@/services/EssayAnalysisService";
+import { EssayAnalysisService } from "@/services/EssayAnalysisService";
+import { EssayAnalysisResult } from "@/types/essay";
 
 const Analysis = () => {
   const [essay, setEssay] = useState("");
