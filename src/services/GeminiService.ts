@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 
 // This key would typically be stored in environment variables or Supabase secrets
@@ -108,16 +109,45 @@ export class GeminiService {
 
   static async analyzeEssay(essayText: string): Promise<GeminiResponse> {
     return this.generateContent({
-      prompt: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, and overall effectiveness. Be specific about strengths and areas for improvement:
+      prompt: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, and overall effectiveness. Be specific about strengths and areas for improvement.
+      Format your analysis as a JSON object with these fields:
+      {
+        "overallScore": number from 0-100,
+        "structure": {
+          "score": number from 0-100,
+          "feedback": "detailed feedback on essay structure"
+        },
+        "style": {
+          "score": number from 0-100,
+          "feedback": "detailed feedback on writing style",
+          "suggestions": ["suggestion1", "suggestion2", "suggestion3", "suggestion4"]
+        },
+        "thesis": {
+          "detected": boolean,
+          "text": "extracted thesis statement if detected",
+          "score": number from 0-100,
+          "feedback": "feedback on thesis clarity and effectiveness"
+        },
+        "citations": {
+          "count": number of citations detected,
+          "format": "detected citation format (e.g., APA, MLA)",
+          "isValid": boolean,
+          "feedback": "feedback on citation usage and formatting"
+        }
+      }
 
-${essayText}`,
-      temperature: 0.3, // Lower temperature for more focused analysis
+      Here's the essay to analyze:
+      
+      ${essayText}`,
+      temperature: 0.3, // Lower temperature for more structured analysis
     });
   }
 
   static async detectPlagiarism(text: string): Promise<GeminiResponse> {
     return this.generateContent({
-      prompt: `Analyze the following text for potential plagiarism. Identify any common academic phrases, widely used expressions, or potential verbatim copies that might need citation. Do not falsely flag original content. Format your response as JSON with these fields: 
+      prompt: `Analyze the following text for potential plagiarism. Identify any common academic phrases, widely used expressions, or potential verbatim copies that might need citation. Do not falsely flag original content.
+      
+      Format your response as a plain JSON object with these fields - DO NOT include any markdown formatting, code blocks, or extra text:
       {
         "originalityScore": number from 0-100,
         "matches": [

@@ -27,8 +27,15 @@ export class PlagiarismService {
         
         if (geminiResponse.status === 'success' && geminiResponse.text) {
           try {
+            // Clean the response text to handle potential markdown or code blocks
+            const cleanedText = geminiResponse.text
+              .replace(/```json\s*/g, '')
+              .replace(/```\s*$/g, '')
+              .replace(/```/g, '')
+              .trim();
+            
             // Parse the JSON response from Gemini
-            const parsedResult = JSON.parse(geminiResponse.text);
+            const parsedResult = JSON.parse(cleanedText);
             
             // Convert the Gemini response to our PlagiarismResult format
             return {
@@ -36,7 +43,7 @@ export class PlagiarismService {
               matches: parsedResult.matches || []
             };
           } catch (parseError) {
-            console.error("Error parsing Gemini response:", parseError);
+            console.error("Error parsing Gemini response:", parseError, geminiResponse.text);
             // Fall back to BERT-based detection
             return this.fallbackBertDetection(text);
           }
