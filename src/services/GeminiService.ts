@@ -1,8 +1,7 @@
-
 import { toast } from "sonner";
 
 // This key would typically be stored in environment variables or Supabase secrets
-let geminiApiKey: string | null = null;
+let geminiApiKey: string | null = "AIzaSyDm1pVklbG1mtweNxYjunJJM9DkgkrHOro";
 
 export interface GeminiRequestOptions {
   prompt: string;
@@ -138,4 +137,3 @@ ${essayText}`,
     });
   }
 }
-
