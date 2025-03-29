@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -19,25 +20,31 @@ const SignIn = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate authentication - in a real app, this would connect to your auth backend
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       
-      // For demo purposes - success for any non-empty input
-      if (email && password) {
-        toast({
-          title: "Sign in successful",
-          description: "Welcome back to WriteRight Essay!"
-        });
-        navigate("/dashboard");
-      } else {
-        toast({
-          title: "Sign in failed",
-          description: "Please check your credentials and try again.",
-          variant: "destructive"
-        });
+      if (error) {
+        throw error;
       }
-    }, 1500);
+      
+      toast({
+        title: "Sign in successful",
+        description: "Welcome back to WriteRight Essay!"
+      });
+      
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Sign in failed",
+        description: error.message || "Please check your credentials and try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

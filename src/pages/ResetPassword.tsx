@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -14,6 +15,23 @@ const ResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Check if we have a session (user came from a password reset email)
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        toast({
+          title: "Invalid access",
+          description: "Please use the reset link sent to your email.",
+          variant: "destructive"
+        });
+        navigate("/sign-in");
+      }
+    };
+    
+    checkSession();
+  }, [navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,26 +45,43 @@ const ResetPassword = () => {
       return;
     }
     
+    if (password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
-    // Simulate password reset - in a real app, this would connect to your auth backend
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password,
+      });
       
-      if (password && password.length >= 6) {
-        toast({
-          title: "Password reset successful",
-          description: "Your password has been reset. You can now sign in with your new password."
-        });
-        navigate("/sign-in");
-      } else {
-        toast({
-          title: "Password reset failed",
-          description: "Password must be at least 6 characters long.",
-          variant: "destructive"
-        });
+      if (error) {
+        throw error;
       }
-    }, 1500);
+      
+      toast({
+        title: "Password reset successful",
+        description: "Your password has been reset. You can now sign in with your new password."
+      });
+      
+      // Sign out after password reset
+      await supabase.auth.signOut();
+      navigate("/sign-in");
+    } catch (error: any) {
+      toast({
+        title: "Password reset failed",
+        description: error.message || "Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -73,6 +108,7 @@ const ResetPassword = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    minLength={6}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -91,6 +127,7 @@ const ResetPassword = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
+                    minLength={6}
                   />
                 </div>
               </div>

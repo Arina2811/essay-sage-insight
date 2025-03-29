@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -18,24 +19,29 @@ const ForgotPassword = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate password reset request - in a real app, this would connect to your auth backend
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
       
-      if (email) {
-        setIsSubmitted(true);
-        toast({
-          title: "Reset link sent",
-          description: "Check your email for a link to reset your password.",
-        });
-      } else {
-        toast({
-          title: "Submission failed",
-          description: "Please provide your email address.",
-          variant: "destructive"
-        });
+      if (error) {
+        throw error;
       }
-    }, 1500);
+      
+      setIsSubmitted(true);
+      toast({
+        title: "Reset link sent",
+        description: "Check your email for a link to reset your password.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Reset request failed",
+        description: error.message || "Please check your email and try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

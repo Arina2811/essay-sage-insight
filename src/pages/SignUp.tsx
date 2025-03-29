@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Lock, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const SignUp = () => {
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -20,25 +22,37 @@ const SignUp = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate registration - in a real app, this would connect to your auth backend
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+          },
+        },
+      });
       
-      // For demo purposes - success for any non-empty input
-      if (name && email && password) {
-        toast({
-          title: "Account created",
-          description: "Welcome to WriteRight Essay! You can now sign in."
-        });
-        navigate("/sign-in");
-      } else {
-        toast({
-          title: "Registration failed",
-          description: "Please fill in all fields and try again.",
-          variant: "destructive"
-        });
+      if (error) {
+        throw error;
       }
-    }, 1500);
+      
+      toast({
+        title: "Account created",
+        description: "Please check your email to confirm your account."
+      });
+      
+      navigate("/sign-in");
+    } catch (error: any) {
+      toast({
+        title: "Registration failed",
+        description: error.message || "Please check your details and try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,16 +68,31 @@ const SignUp = () => {
           <CardContent>
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="firstName">First Name</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
                   <Input
-                    id="name"
+                    id="firstName"
                     type="text"
-                    placeholder="John Doe"
+                    placeholder="John"
                     className="pl-10"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    id="lastName"
+                    type="text"
+                    placeholder="Doe"
+                    className="pl-10"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
                     required
                   />
                 </div>
@@ -95,8 +124,12 @@ const SignUp = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    minLength={6}
                   />
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Password must be at least 6 characters long
+                </p>
               </div>
               <Button
                 type="submit"
