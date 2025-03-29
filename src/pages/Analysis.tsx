@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EssayAnalysisService } from "@/services/EssayAnalysisService";
 import { EssayAnalysisResult } from "@/types/essay";
+import { useNavigate } from "react-router-dom";
 
 const Analysis = () => {
   const [essay, setEssay] = useState("");
@@ -18,6 +20,7 @@ const Analysis = () => {
   const [analysisResult, setAnalysisResult] = useState<EssayAnalysisResult | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const { toast: uiToast } = useToast();
+  const navigate = useNavigate();
 
   const handleAnalysis = async () => {
     if (!essay.trim()) {
@@ -59,7 +62,7 @@ const Analysis = () => {
       setAnalysisResult(result);
       
       // Save the essay and its analysis
-      await EssayAnalysisService.saveEssay({
+      const savedResult = await EssayAnalysisService.saveEssay({
         title: essayTitle,
         content: essay,
         analysis: result
@@ -67,6 +70,10 @@ const Analysis = () => {
 
       toast.success("Essay analysis complete!", {
         description: "Your essay has been analyzed and saved to your library.",
+        action: {
+          label: "View Dashboard",
+          onClick: () => navigate('/dashboard')
+        }
       });
     } catch (error) {
       console.error("Analysis error:", error);
@@ -252,6 +259,21 @@ const Analysis = () => {
                   )}
                 </TabsContent>
               </Tabs>
+              
+              <div className="mt-6 flex justify-end">
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate('/history')}
+                  className="mr-2"
+                >
+                  View History
+                </Button>
+                <Button 
+                  onClick={() => navigate('/dashboard')}
+                >
+                  Go to Dashboard
+                </Button>
+              </div>
             </Card>
           </div>
         )}

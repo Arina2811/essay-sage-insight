@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -22,18 +23,50 @@ import {
   ChartTooltipContent 
 } from "@/components/ui/chart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EssayProgressService } from "@/services/EssayProgressService";
+import { SupabaseEssayService } from "@/services/SupabaseEssayService";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 const Dashboard = () => {
-  // Placeholder data for demonstration
-  const progressData = [
-    { date: "Jan 1", score: 65 },
-    { date: "Jan 15", score: 70 },
-    { date: "Feb 1", score: 75 },
-    { date: "Feb 15", score: 72 },
-    { date: "Mar 1", score: 78 },
-    { date: "Mar 15", score: 82 },
-    { date: "Apr 1", score: 85 },
-  ];
+  const [weeklyFeedback, setWeeklyFeedback] = useState("Loading your personalized feedback...");
+  
+  // Fetch weekly progress data
+  const { 
+    data: weeklyProgressData = [], 
+    isLoading: isLoadingWeekly 
+  } = useQuery({
+    queryKey: ['weeklyProgress'],
+    queryFn: EssayProgressService.getWeeklyProgress,
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+  
+  // Fetch monthly progress data
+  const { 
+    data: monthlyProgressData = [], 
+    isLoading: isLoadingMonthly 
+  } = useQuery({
+    queryKey: ['monthlyProgress'],
+    queryFn: EssayProgressService.getMonthlyProgress,
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+  
+  // Fetch recent essays
+  const { 
+    data: recentEssays = [], 
+    isLoading: isLoadingEssays 
+  } = useQuery({
+    queryKey: ['recentEssays'],
+    queryFn: SupabaseEssayService.getEssays,
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+
+  // Format data for charts
+  const progressData = weeklyProgressData.map(item => ({
+    date: `Week ${item.week}`,
+    score: item.avgScore
+  }));
 
   const categoryScores = [
     { name: "Structure", score: 75 },
@@ -51,19 +84,61 @@ const Dashboard = () => {
   const COLORS = ["#4f46e5", "#f97316", "#06b6d4", "#10b981", "#8b5cf6"];
   const PIE_COLORS = ["#10b981", "#f97316"];
 
+  // Calculate stats based on real data
+  const essayCount = recentEssays.length;
+  const averageScore = recentEssays.length > 0 
+    ? Math.round(recentEssays.reduce((sum, essay) => sum + (essay.analysis?.score || 0), 0) / recentEssays.length) 
+    : 0;
+  
   const stats = [
-    { label: "Essays Analyzed", value: "12" },
-    { label: "Average Score", value: "78/100" },
-    { label: "Improvement", value: "+15%" },
-    { label: "Writing Time", value: "4.2 hrs" },
+    { label: "Essays Analyzed", value: essayCount.toString() },
+    { label: "Average Score", value: `${averageScore}/100` },
+    { label: "Latest Essay", value: recentEssays[0]?.created_at ? new Date(recentEssays[0].created_at).toLocaleDateString() : "N/A" },
+    { label: "Weekly Progress", value: weeklyProgressData.length > 0 ? `${weeklyProgressData[0].count} essays` : "0 essays" },
   ];
 
-  const skills = [
+  // Get skills data from the most recent essay
+  const latestEssay = recentEssays[0];
+  const skills = latestEssay?.analysis ? [
+    { name: "Structure", progress: latestEssay.analysis.structure.score },
+    { name: "Style", progress: latestEssay.analysis.style.score },
+    { name: "Thesis", progress: latestEssay.analysis.thesis.score },
+    { name: "Citations", progress: latestEssay.analysis.citations.count > 0 ? 70 : 30 },
+  ] : [
     { name: "Structure", progress: 75 },
     { name: "Clarity", progress: 82 },
     { name: "Citations", progress: 65 },
     { name: "Argumentation", progress: 68 },
   ];
+
+  // Fetch weekly feedback
+  useEffect(() => {
+    const fetchFeedback = async () => {
+      try {
+        const feedback = await EssayProgressService.getWeeklyFeedback();
+        setWeeklyFeedback(feedback);
+      } catch (error) {
+        console.error("Error fetching weekly feedback:", error);
+        setWeeklyFeedback("Unable to generate feedback at this time. Please try again later.");
+      }
+    };
+    
+    fetchFeedback();
+  }, []);
+
+  // Set up realtime tracking
+  useEffect(() => {
+    const cleanup = EssayProgressService.setupRealtimeTracking((payload) => {
+      // When a new essay is added, show toast notification
+      if (payload.eventType === 'INSERT') {
+        toast.success("New essay analysis added!", {
+          description: "Your dashboard has been updated with the latest data."
+        });
+      }
+    });
+    
+    return cleanup;
+  }, []);
 
   return (
     <div className="container mx-auto section-padding">
@@ -87,29 +162,39 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="p-6 glass">
             <h2 className="text-lg font-semibold mb-4">Writing Progress</h2>
-            <div className="h-[300px]">
-              <ChartContainer
-                config={{
-                  score: { color: "hsl(var(--primary))" },
-                  grid: { color: "hsl(var(--border))" }
-                }}
-              >
-                <LineChart data={progressData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis domain={[50, 100]} />
-                  <ChartTooltip
-                    content={<ChartTooltipContent />}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="score"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ChartContainer>
-            </div>
+            {isLoadingWeekly ? (
+              <div className="h-[300px] flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : progressData.length > 0 ? (
+              <div className="h-[300px]">
+                <ChartContainer
+                  config={{
+                    score: { color: "hsl(var(--primary))" },
+                    grid: { color: "hsl(var(--border))" }
+                  }}
+                >
+                  <LineChart data={progressData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis domain={[0, 100]} />
+                    <ChartTooltip
+                      content={<ChartTooltipContent />}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="score"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                    />
+                  </LineChart>
+                </ChartContainer>
+              </div>
+            ) : (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                No progress data available yet. Submit more essays to see your progress.
+              </div>
+            )}
           </Card>
 
           <Card className="p-6 glass">
@@ -187,36 +272,10 @@ const Dashboard = () => {
         </div>
 
         <Card className="p-6 glass">
-          <h2 className="text-lg font-semibold mb-4">Recent Essay Analysis</h2>
-          <Tabs defaultValue="feedback">
-            <TabsList className="mb-4">
-              <TabsTrigger value="feedback">Smart Feedback</TabsTrigger>
-              <TabsTrigger value="style">Style</TabsTrigger>
-              <TabsTrigger value="thesis">Thesis</TabsTrigger>
-              <TabsTrigger value="citations">Citations</TabsTrigger>
-              <TabsTrigger value="plagiarism">Plagiarism</TabsTrigger>
-            </TabsList>
-            <TabsContent value="feedback" className="space-y-4">
-              <h3 className="font-medium">Essay Structure Analysis</h3>
-              <p className="text-muted-foreground">Your essay has a clear introduction, body, and conclusion. The thesis is well-stated, but could be more specific. Each paragraph focuses on a single idea, which is excellent. Consider adding more transitions between paragraphs to improve flow.</p>
-            </TabsContent>
-            <TabsContent value="style" className="space-y-4">
-              <h3 className="font-medium">Academic Style Suggestions</h3>
-              <p className="text-muted-foreground">Your writing demonstrates good academic tone. Consider reducing use of passive voice (found in 25% of sentences). Academic vocabulary is appropriate, though adding more field-specific terminology would strengthen your argument.</p>
-            </TabsContent>
-            <TabsContent value="thesis" className="space-y-4">
-              <h3 className="font-medium">Thesis Evaluation</h3>
-              <p className="text-muted-foreground">Your thesis statement appears in paragraph 1: "Technology has dramatically altered how we interact with information." This thesis is clear but somewhat broad. Consider narrowing your focus to a specific aspect of technology and information interaction.</p>
-            </TabsContent>
-            <TabsContent value="citations" className="space-y-4">
-              <h3 className="font-medium">Citation Format</h3>
-              <p className="text-muted-foreground">Found 8 citations in your essay. All citations follow APA 7th edition format correctly. Two sources appear dated (over 10 years old) - consider finding more recent research to strengthen your argument.</p>
-            </TabsContent>
-            <TabsContent value="plagiarism" className="space-y-4">
-              <h3 className="font-medium">Plagiarism Check</h3>
-              <p className="text-muted-foreground">Originality score: 98%. No significant matches found against our database. One sentence shows minor similarity (15%) to a commonly used phrase in academic writing - this is not concerning.</p>
-            </TabsContent>
-          </Tabs>
+          <h2 className="text-lg font-semibold mb-4">Weekly Feedback</h2>
+          <div className="p-4 bg-muted/50 rounded-md whitespace-pre-line">
+            {weeklyFeedback}
+          </div>
         </Card>
       </div>
     </div>

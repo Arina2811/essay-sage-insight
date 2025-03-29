@@ -35,12 +35,13 @@ export class SupabaseEssayService {
       
       // Insert essay into Supabase
       const { data, error } = await supabase
-        .from('essays')
+        .from('essay_analyses')
         .insert({
           user_id: userId,
           title: essayData.title,
           content: essayData.content,
-          analysis: essayData.analysis
+          analysis_result: essayData.analysis,
+          overall_score: essayData.analysis?.score || 0
         })
         .select('id')
         .single();
@@ -78,7 +79,7 @@ export class SupabaseEssayService {
       
       // Get essays from Supabase
       const { data, error } = await supabase
-        .from('essays')
+        .from('essay_analyses')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
@@ -93,13 +94,59 @@ export class SupabaseEssayService {
         id: item.id,
         title: item.title,
         content: item.content,
-        analysis: item.analysis,
+        analysis: item.analysis_result as EssayAnalysisResult,
         created_at: item.created_at
       }));
     } catch (error) {
       console.error("Error in getEssays:", error);
       toast.error("Failed to fetch essays. Please try again later.");
       return [];
+    }
+  }
+
+  /**
+   * Get a single essay by ID
+   */
+  static async getEssayById(id: string): Promise<EssayData | null> {
+    try {
+      // Check if user is authenticated
+      const { data: session } = await supabase.auth.getSession();
+      const userId = session?.session?.user?.id;
+      
+      if (!userId) {
+        // If not authenticated, get from local storage
+        const localEssays = JSON.parse(localStorage.getItem('essays') || '[]');
+        const essay = localEssays.find((e: EssayData) => e.id === id);
+        return essay || null;
+      }
+      
+      // Get essay from Supabase
+      const { data, error } = await supabase
+        .from('essay_analyses')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', userId)
+        .maybeSingle();
+        
+      if (error) {
+        console.error("Error fetching essay from Supabase:", error);
+        throw error;
+      }
+      
+      if (!data) return null;
+      
+      // Convert to EssayData format
+      return {
+        id: data.id,
+        title: data.title,
+        content: data.content,
+        analysis: data.analysis_result as EssayAnalysisResult,
+        created_at: data.created_at
+      };
+    } catch (error) {
+      console.error("Error in getEssayById:", error);
+      toast.error("Failed to fetch essay. Please try again later.");
+      return null;
     }
   }
 }
