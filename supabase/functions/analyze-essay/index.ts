@@ -14,11 +14,17 @@ serve(async (req) => {
   }
 
   try {
-    const { text } = await req.json();
+    const { text, nlpConfig } = await req.json();
 
     if (!text || typeof text !== 'string') {
       throw new Error('Valid essay text is required');
     }
+
+    // Use provided NLP config or defaults
+    const bertConfig = nlpConfig?.bertConfig || { sensitivity: 75, contextDepth: 80 };
+    const bartConfig = nlpConfig?.bartConfig || { creativity: 60, academicTone: 85 };
+    
+    console.log("Using NLP configuration:", { bertConfig, bartConfig });
 
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     
@@ -29,7 +35,7 @@ serve(async (req) => {
     console.log("Analyzing essay with Gemini AI");
     
     // Use Gemini API for enhanced analysis
-    const analysisResponse = await analyzeWithGemini(text, geminiApiKey);
+    const analysisResponse = await analyzeWithGemini(text, geminiApiKey, bertConfig, bartConfig);
     
     // Use Gemini API for plagiarism detection
     const plagiarismResponse = await checkPlagiarism(text, geminiApiKey);
@@ -63,7 +69,12 @@ serve(async (req) => {
   }
 });
 
-async function analyzeWithGemini(essayText: string, apiKey: string) {
+async function analyzeWithGemini(
+  essayText: string, 
+  apiKey: string, 
+  bertConfig: { sensitivity: number; contextDepth: number },
+  bartConfig: { creativity: number; academicTone: number }
+) {
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`,
     {
@@ -76,7 +87,15 @@ async function analyzeWithGemini(essayText: string, apiKey: string) {
           {
             parts: [
               {
-                text: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, and overall effectiveness. Be specific about strengths and areas for improvement.
+                text: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, and overall effectiveness.
+                
+                Use these specific configuration parameters to adjust your analysis:
+                - BERT sensitivity: ${bertConfig.sensitivity}% (higher means more attention to semantic nuances)
+                - BERT context depth: ${bertConfig.contextDepth}% (higher means deeper analysis of conceptual relationships)
+                - BART creativity: ${bartConfig.creativity}% (higher means more creative and diverse suggestions)
+                - BART academic tone: ${bartConfig.academicTone}% (higher means more scholarly language in suggestions)
+                
+                Be specific about strengths and areas for improvement.
                 Format your analysis as a JSON object with these fields:
                 {
                   "overallScore": number from 0-100,
