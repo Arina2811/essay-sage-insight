@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Mail, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { Switch } from "@/components/ui/switch";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ const SignIn = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { signIn } = useAuth();
+  const { signIn, bypassAuth, setBypassAuth } = useAuth();
   
   // Get the intended destination from location state, or default to dashboard
   const from = location.state?.from?.pathname || "/dashboard";
@@ -46,6 +47,22 @@ const SignIn = () => {
     }
   };
 
+  const handleBypassAuth = () => {
+    setBypassAuth(!bypassAuth);
+    if (!bypassAuth) {
+      toast({
+        title: "Auth bypass enabled",
+        description: "You can now access all features without authentication.",
+      });
+      navigate(from, { replace: true });
+    } else {
+      toast({
+        title: "Auth bypass disabled",
+        description: "Authentication is now required to access protected features.",
+      });
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen px-4 section-padding">
       <div className="w-full max-w-md">
@@ -57,6 +74,22 @@ const SignIn = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="p-4 mb-4 bg-yellow-100 border border-yellow-400 rounded-md">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="bypass-auth" className="font-medium text-yellow-800">Bypass Authentication</Label>
+                <Switch
+                  id="bypass-auth"
+                  checked={bypassAuth}
+                  onCheckedChange={handleBypassAuth}
+                />
+              </div>
+              <p className="mt-1 text-sm text-yellow-700">
+                {bypassAuth 
+                  ? "Auth bypass is enabled. Click the switch to disable it." 
+                  : "Enable this to access the app without authentication."}
+              </p>
+            </div>
+            
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -70,6 +103,7 @@ const SignIn = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={bypassAuth}
                   />
                 </div>
               </div>
@@ -93,13 +127,14 @@ const SignIn = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    disabled={bypassAuth}
                   />
                 </div>
               </div>
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading}
+                disabled={isLoading || bypassAuth}
               >
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>

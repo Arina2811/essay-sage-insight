@@ -17,7 +17,7 @@ const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signUp } = useAuth();
+  const { signUp, bypassAuth } = useAuth();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +57,16 @@ const SignUp = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {bypassAuth && (
+              <div className="p-4 mb-4 bg-yellow-100 border border-yellow-400 rounded-md">
+                <p className="text-sm text-yellow-800 font-medium">Authentication Bypass Enabled</p>
+                <p className="text-xs text-yellow-700 mt-1">
+                  Authentication bypass is currently enabled. You can access all features without creating an account. 
+                  Go to the <Link to="/sign-in" className="underline font-medium">Sign In</Link> page to disable this feature.
+                </p>
+              </div>
+            )}
+            
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>

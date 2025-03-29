@@ -7,12 +7,17 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, bypassAuth } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
     // You can add a loading spinner here if you want
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
+
+  // If bypass is enabled, allow access regardless of authentication status
+  if (bypassAuth) {
+    return <>{children}</>;
   }
 
   if (!user) {

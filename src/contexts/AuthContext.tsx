@@ -11,6 +11,8 @@ interface AuthContextProps {
   signUp: (email: string, password: string, metadata?: { [key: string]: any }) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  bypassAuth: boolean;
+  setBypassAuth: (bypass: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -19,6 +21,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [bypassAuth, setBypassAuth] = useState(true); // Setting default to true to bypass auth
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -80,6 +83,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signUp,
         signOut,
         resetPassword,
+        bypassAuth,
+        setBypassAuth,
       }}
     >
       {children}
