@@ -55,7 +55,8 @@ export class EssayAnalysisService {
         body: { test: true }
       });
       
-      if (error || !healthCheck?.status === 'ok') {
+      // Fix the comparison issue - properly check if status is not 'ok'
+      if (error || (healthCheck?.status !== 'ok')) {
         return false;
       }
       

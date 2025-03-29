@@ -24,10 +24,10 @@ export class EssayProgressService {
         return [];
       }
       
-      // Get weekly progress data
+      // Get weekly progress data by calculating the week from created_at
       const { data, error } = await supabase
         .from('essay_analyses')
-        .select('week_number, overall_score')
+        .select('created_at, overall_score')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
         
@@ -37,10 +37,21 @@ export class EssayProgressService {
       }
       
       // Group by week and calculate statistics
-      const weeklyData = data.reduce((acc, item) => {
-        const week = item.week_number;
-        if (!acc[week]) {
-          acc[week] = {
+      const weeklyData: Record<number, { 
+        week: number, 
+        count: number, 
+        totalScore: number, 
+        avgScore: number 
+      }> = {};
+      
+      // Process each essay and group by week
+      data.forEach(item => {
+        const date = new Date(item.created_at);
+        // Get ISO week number (1-53)
+        const week = getWeekNumber(date);
+        
+        if (!weeklyData[week]) {
+          weeklyData[week] = {
             week,
             count: 0,
             totalScore: 0,
@@ -48,12 +59,10 @@ export class EssayProgressService {
           };
         }
         
-        acc[week].count += 1;
-        acc[week].totalScore += item.overall_score;
-        acc[week].avgScore = Math.round(acc[week].totalScore / acc[week].count);
-        
-        return acc;
-      }, {});
+        weeklyData[week].count += 1;
+        weeklyData[week].totalScore += item.overall_score || 0;
+        weeklyData[week].avgScore = Math.round(weeklyData[week].totalScore / weeklyData[week].count);
+      });
       
       return Object.values(weeklyData);
     } catch (error) {
@@ -80,10 +89,10 @@ export class EssayProgressService {
         return [];
       }
       
-      // Get monthly progress data
+      // Get monthly progress data by extracting month from created_at
       const { data, error } = await supabase
         .from('essay_analyses')
-        .select('month_number, overall_score')
+        .select('created_at, overall_score')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
         
@@ -93,10 +102,20 @@ export class EssayProgressService {
       }
       
       // Group by month and calculate statistics
-      const monthlyData = data.reduce((acc, item) => {
-        const month = item.month_number;
-        if (!acc[month]) {
-          acc[month] = {
+      const monthlyData: Record<number, { 
+        month: number, 
+        count: number, 
+        totalScore: number, 
+        avgScore: number 
+      }> = {};
+      
+      // Process each essay and group by month
+      data.forEach(item => {
+        const date = new Date(item.created_at);
+        const month = date.getMonth() + 1; // JavaScript months are 0-indexed
+        
+        if (!monthlyData[month]) {
+          monthlyData[month] = {
             month,
             count: 0,
             totalScore: 0,
@@ -104,12 +123,10 @@ export class EssayProgressService {
           };
         }
         
-        acc[month].count += 1;
-        acc[month].totalScore += item.overall_score;
-        acc[month].avgScore = Math.round(acc[month].totalScore / acc[month].count);
-        
-        return acc;
-      }, {});
+        monthlyData[month].count += 1;
+        monthlyData[month].totalScore += item.overall_score || 0;
+        monthlyData[month].avgScore = Math.round(monthlyData[month].totalScore / monthlyData[month].count);
+      });
       
       return Object.values(monthlyData);
     } catch (error) {
@@ -153,21 +170,22 @@ export class EssayProgressService {
       }
       
       // Generate feedback based on recent essay data
-      const averageScore = data.reduce((sum, essay) => sum + essay.overall_score, 0) / data.length;
+      const averageScore = data.reduce((sum, essay) => sum + (essay.overall_score || 0), 0) / data.length;
       
       // Collect common feedback points
       const feedbackPoints: Record<string, number> = {};
       data.forEach(essay => {
-        const analysis = essay.analysis_result;
+        // Type cast analysis_result to EssayAnalysisResult
+        const analysis = essay.analysis_result as unknown as EssayAnalysisResult;
         
         // Structure feedback
-        if (analysis.structure && analysis.structure.feedback) {
+        if (analysis && analysis.structure && analysis.structure.feedback) {
           const key = analysis.structure.feedback.substring(0, 50);
           feedbackPoints[key] = (feedbackPoints[key] || 0) + 1;
         }
         
         // Style suggestions
-        if (analysis.style && analysis.style.suggestions) {
+        if (analysis && analysis.style && analysis.style.suggestions) {
           analysis.style.suggestions.forEach((suggestion: string) => {
             const key = suggestion.substring(0, 50);
             feedbackPoints[key] = (feedbackPoints[key] || 0) + 1;
@@ -175,7 +193,7 @@ export class EssayProgressService {
         }
         
         // Thesis feedback
-        if (analysis.thesis && analysis.thesis.feedback) {
+        if (analysis && analysis.thesis && analysis.thesis.feedback) {
           const key = analysis.thesis.feedback.substring(0, 50);
           feedbackPoints[key] = (feedbackPoints[key] || 0) + 1;
         }
@@ -228,4 +246,15 @@ export class EssayProgressService {
       supabase.removeChannel(channel);
     };
   }
+}
+
+/**
+ * Helper function to get ISO week number from date
+ */
+function getWeekNumber(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
 }
