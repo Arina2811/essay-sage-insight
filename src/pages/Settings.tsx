@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,8 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { GeminiService } from "@/services/GeminiService";
-import { CheckCircle, RotateCcw } from "lucide-react";
-import { EssayAnalysisService } from "@/services/EssayAnalysisService";
+import { CheckCircle } from "lucide-react";
 
 const Settings = () => {
   const [feedbackLevel, setFeedbackLevel] = useState("moderate");
@@ -20,13 +18,6 @@ const Settings = () => {
   const [institution, setInstitution] = useState("University of Technology");
   const [geminiApiKey, setGeminiApiKey] = useState("");
   const [geminiKeyStatus, setGeminiKeyStatus] = useState(false);
-  
-  // NLP Model Configuration
-  const [bertSensitivity, setBertSensitivity] = useState(75);
-  const [bertContextDepth, setBertContextDepth] = useState(80);
-  const [bartCreativity, setBartCreativity] = useState(60);
-  const [bartAcademicTone, setBartAcademicTone] = useState(85);
-  
   const { toast } = useToast();
 
   useEffect(() => {
@@ -35,13 +26,6 @@ const Settings = () => {
       setGeminiApiKey(savedKey);
       setGeminiKeyStatus(true);
     }
-    
-    // Load NLP configuration
-    const nlpConfig = EssayAnalysisService.getNlpConfig();
-    setBertSensitivity(nlpConfig.bertConfig.sensitivity);
-    setBertContextDepth(nlpConfig.bertConfig.contextDepth);
-    setBartCreativity(nlpConfig.bartConfig.creativity);
-    setBartAcademicTone(nlpConfig.bartConfig.academicTone);
   }, []);
 
   const handleSave = () => {
@@ -92,35 +76,6 @@ const Settings = () => {
       title: "API Key Removed",
       description: "Your Gemini API key has been removed successfully.",
     });
-  };
-
-  const handleBertConfigSave = () => {
-    EssayAnalysisService.updateNlpConfig({
-      bertConfig: {
-        sensitivity: bertSensitivity,
-        contextDepth: bertContextDepth
-      }
-    });
-  };
-
-  const handleBartConfigSave = () => {
-    EssayAnalysisService.updateNlpConfig({
-      bartConfig: {
-        creativity: bartCreativity,
-        academicTone: bartAcademicTone
-      }
-    });
-  };
-
-  const handleResetNlpConfig = () => {
-    EssayAnalysisService.resetNlpConfig();
-    
-    // Reload the default values
-    const nlpConfig = EssayAnalysisService.getNlpConfig();
-    setBertSensitivity(nlpConfig.bertConfig.sensitivity);
-    setBertContextDepth(nlpConfig.bertConfig.contextDepth);
-    setBartCreativity(nlpConfig.bartConfig.creativity);
-    setBartAcademicTone(nlpConfig.bartConfig.academicTone);
   };
 
   return (
@@ -230,18 +185,7 @@ const Settings = () => {
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">AI Model Preferences</h3>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex items-center gap-1" 
-                      onClick={handleResetNlpConfig}
-                    >
-                      <RotateCcw className="h-4 w-4" />
-                      Reset All
-                    </Button>
-                  </div>
+                  <h3 className="text-lg font-semibold mb-4">AI Model Preferences</h3>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
@@ -263,42 +207,16 @@ const Settings = () => {
                           </SheetHeader>
                           <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Label htmlFor="sensitivity">Sensitivity: {bertSensitivity}</Label>
-                                <span className="text-sm text-muted-foreground">{bertSensitivity}%</span>
-                              </div>
-                              <Input 
-                                id="sensitivity" 
-                                type="range" 
-                                min="0" 
-                                max="100" 
-                                value={bertSensitivity} 
-                                onChange={(e) => setBertSensitivity(parseInt(e.target.value))}
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Higher sensitivity increases detection of semantic nuances in your essay.
-                              </p>
+                              <Label htmlFor="sensitivity">Sensitivity</Label>
+                              <Input id="sensitivity" type="range" min="0" max="100" defaultValue="75" />
                             </div>
                             <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Label htmlFor="contextDepth">Context Depth: {bertContextDepth}</Label>
-                                <span className="text-sm text-muted-foreground">{bertContextDepth}%</span>
-                              </div>
-                              <Input 
-                                id="contextDepth" 
-                                type="range" 
-                                min="0" 
-                                max="100" 
-                                value={bertContextDepth}
-                                onChange={(e) => setBertContextDepth(parseInt(e.target.value))}
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Higher context depth improves analysis of relationships between concepts in your essay.
-                              </p>
+                              <Label htmlFor="contextDepth">Context Depth</Label>
+                              <Input id="contextDepth" type="range" min="0" max="100" defaultValue="80" />
                             </div>
                           </div>
                           <div className="flex justify-end">
-                            <Button onClick={handleBertConfigSave}>Save Configuration</Button>
+                            <Button>Save Configuration</Button>
                           </div>
                         </SheetContent>
                       </Sheet>
@@ -324,42 +242,16 @@ const Settings = () => {
                           </SheetHeader>
                           <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Label htmlFor="creativity">Creativity: {bartCreativity}</Label>
-                                <span className="text-sm text-muted-foreground">{bartCreativity}%</span>
-                              </div>
-                              <Input 
-                                id="creativity" 
-                                type="range" 
-                                min="0" 
-                                max="100" 
-                                value={bartCreativity}
-                                onChange={(e) => setBartCreativity(parseInt(e.target.value))}
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Higher creativity produces more novel and diverse suggestions for your essay.
-                              </p>
+                              <Label htmlFor="creativity">Creativity</Label>
+                              <Input id="creativity" type="range" min="0" max="100" defaultValue="60" />
                             </div>
                             <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Label htmlFor="academicTone">Academic Tone: {bartAcademicTone}</Label>
-                                <span className="text-sm text-muted-foreground">{bartAcademicTone}%</span>
-                              </div>
-                              <Input 
-                                id="academicTone" 
-                                type="range" 
-                                min="0" 
-                                max="100" 
-                                value={bartAcademicTone}
-                                onChange={(e) => setBartAcademicTone(parseInt(e.target.value))}
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Higher academic tone ensures suggestions match scholarly writing conventions.
-                              </p>
+                              <Label htmlFor="academicTone">Academic Tone</Label>
+                              <Input id="academicTone" type="range" min="0" max="100" defaultValue="85" />
                             </div>
                           </div>
                           <div className="flex justify-end">
-                            <Button onClick={handleBartConfigSave}>Save Configuration</Button>
+                            <Button>Save Configuration</Button>
                           </div>
                         </SheetContent>
                       </Sheet>

@@ -77,11 +77,8 @@ export class EssayAnalysisService {
       console.log("Using Gemini for enhanced essay analysis");
       return await GeminiEssayService.analyzeWithGemini(essayText);
     } else {
-      // Get custom NLP configuration if available
-      const nlpConfig = EssayStructureService.getConfig();
-      console.log("No Gemini API key, using BERT/BART for analysis with config:", nlpConfig);
-      
       // No Gemini API key, use BERT/BART-based analysis
+      console.log("No Gemini API key, using BERT/BART for analysis");
       const plagiarismResult = await PlagiarismService.checkPlagiarism(essayText);
       return await EssayStructureService.fallbackBertBartAnalysis(essayText, plagiarismResult);
     }
@@ -122,28 +119,5 @@ export class EssayAnalysisService {
       // Fall back to original storage method
       return await EssayStorageService.saveEssay(essayData);
     }
-  }
-  
-  /**
-   * Update NLP model configuration
-   */
-  static updateNlpConfig(config: Parameters<typeof EssayStructureService.updateConfig>[0]): void {
-    EssayStructureService.updateConfig(config);
-    toast.success("NLP model configuration updated successfully");
-  }
-  
-  /**
-   * Get current NLP model configuration
-   */
-  static getNlpConfig(): ReturnType<typeof EssayStructureService.getConfig> {
-    return EssayStructureService.getConfig();
-  }
-  
-  /**
-   * Reset NLP model configuration to defaults
-   */
-  static resetNlpConfig(): void {
-    EssayStructureService.resetConfig();
-    toast.success("NLP model configuration reset to defaults");
   }
 }
