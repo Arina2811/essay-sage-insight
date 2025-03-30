@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { EssayData, EssayAnalysisResult } from "@/types/essay";
+import { Database } from "@/integrations/supabase/types";
 
 /**
  * Service for handling essay data with Supabase backend integration
@@ -34,16 +35,17 @@ export class SupabaseEssayService {
       }
       
       // Insert essay into Supabase with proper typing
+      const insertData: Database['public']['Tables']['essay_analyses']['Insert'] = {
+        title: essayData.title,
+        content: essayData.content,
+        analysis_result: essayData.analysis as any, // Type casting to avoid TypeScript errors
+        overall_score: essayData.analysis?.score || 0,
+        user_id: userId
+      };
+      
       const { data, error } = await supabase
         .from('essay_analyses')
-        .insert({
-          // Only include properties that exist in the database schema
-          title: essayData.title,
-          content: essayData.content,
-          analysis_result: essayData.analysis as any, // Type casting to avoid TypeScript errors
-          overall_score: essayData.analysis?.score || 0,
-          user_id: userId
-        })
+        .insert(insertData)
         .select('id')
         .single();
         
@@ -86,7 +88,7 @@ export class SupabaseEssayService {
       const { data, error } = await supabase
         .from('essay_analyses')
         .select('*')
-        .eq('user_id', userId as string)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
         
       if (error) {
@@ -133,8 +135,8 @@ export class SupabaseEssayService {
       const { data, error } = await supabase
         .from('essay_analyses')
         .select('*')
-        .eq('id', id as string)
-        .eq('user_id', userId as string)
+        .eq('id', id)
+        .eq('user_id', userId)
         .maybeSingle();
         
       if (error) {

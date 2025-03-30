@@ -19,13 +19,8 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       detectSessionInUrl: true,
       flowType: 'pkce',
-      debug: process.env.NODE_ENV === 'development',
-      // In development environment, we disable captcha to make authentication work
-      // for local testing without requiring captcha verification
-      cookieOptions: {
-        // Set secure to false in development
-        secure: process.env.NODE_ENV === 'production'
-      }
+      debug: process.env.NODE_ENV === 'development'
+      // Removed cookieOptions as it's not supported in the type definition
     }
   }
 );

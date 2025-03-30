@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { EssayData, EssayAnalysisResult } from "@/types/essay";
+import { Database } from "@/integrations/supabase/types";
 
 /**
  * Service for tracking essay analysis progress and providing feedback
@@ -28,7 +29,7 @@ export class EssayProgressService {
       const { data, error } = await supabase
         .from('essay_analyses')
         .select('created_at, overall_score')
-        .eq('user_id', userId as string)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
         
       if (error) {
@@ -50,7 +51,7 @@ export class EssayProgressService {
       
       // Process each essay and group by week
       data.forEach(item => {
-        if (!item.created_at) return;
+        if (!item || !item.created_at) return;
         
         const date = new Date(item.created_at);
         // Get ISO week number (1-53)
@@ -99,7 +100,7 @@ export class EssayProgressService {
       const { data, error } = await supabase
         .from('essay_analyses')
         .select('created_at, overall_score')
-        .eq('user_id', userId as string)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
         
       if (error) {
@@ -121,7 +122,7 @@ export class EssayProgressService {
       
       // Process each essay and group by month
       data.forEach(item => {
-        if (!item.created_at) return;
+        if (!item || !item.created_at) return;
         
         const date = new Date(item.created_at);
         const month = date.getMonth() + 1; // JavaScript months are 0-indexed
@@ -168,7 +169,7 @@ export class EssayProgressService {
       const { data, error } = await supabase
         .from('essay_analyses')
         .select('analysis_result, overall_score')
-        .eq('user_id', userId as string)
+        .eq('user_id', userId)
         .gte('created_at', thirtyDaysAgo.toISOString())
         .order('created_at', { ascending: false });
         
@@ -182,7 +183,17 @@ export class EssayProgressService {
       }
       
       // Generate feedback based on recent essay data with proper null checking
-      const averageScore = data.reduce((sum, essay) => sum + (essay?.overall_score || 0), 0) / data.length;
+      let totalScore = 0;
+      let validEssayCount = 0;
+      
+      data.forEach(essay => {
+        if (essay && typeof essay.overall_score === 'number') {
+          totalScore += essay.overall_score;
+          validEssayCount++;
+        }
+      });
+      
+      const averageScore = validEssayCount > 0 ? totalScore / validEssayCount : 0;
       
       // Collect common feedback points
       const feedbackPoints: Record<string, number> = {};
