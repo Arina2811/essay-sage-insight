@@ -20,7 +20,6 @@ export const supabase = createClient<Database>(
       detectSessionInUrl: true,
       flowType: 'pkce',
       debug: process.env.NODE_ENV === 'development'
-      // Removed cookieOptions as it's not supported in the type definition
     }
   }
 );

@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { AuthService } from '@/services/AuthService';
 
 interface AuthContextProps {
   session: Session | null;
@@ -52,8 +53,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      const { success, error } = await AuthService.signIn(email, password);
+      
+      if (!success && error) {
+        toast({
+          title: "Sign in failed",
+          description: error,
+          variant: "destructive"
+        });
+        throw new Error(error);
+      }
       
       toast({
         title: "Sign in successful",
@@ -61,18 +70,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } catch (error: any) {
       console.error("Sign in error:", error.message);
-      let errorMessage = error.message;
-      
-      // Provide more user-friendly error messages for common issues
-      if (errorMessage.includes('captcha verification') || errorMessage.includes('captcha_token')) {
-        errorMessage = "Authentication failed. The captcha verification system is currently disabled for development. Please try again or use the bypass option.";
-      }
-      
-      toast({
-        title: "Sign in failed",
-        description: errorMessage,
-        variant: "destructive"
-      });
       throw error;
     } finally {
       setIsLoading(false);
@@ -81,35 +78,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`
-        }
-      });
-      if (error) throw error;
+      const { success, error } = await AuthService.signInWithGoogle();
+      
+      if (!success && error) {
+        toast({
+          title: "Google sign in failed",
+          description: error,
+          variant: "destructive"
+        });
+        throw new Error(error);
+      }
     } catch (error: any) {
       console.error("Google sign in error:", error.message);
-      toast({
-        title: "Google sign in failed",
-        description: error.message,
-        variant: "destructive"
-      });
       throw error;
     }
   };
 
   const signUp = async (email: string, password: string, metadata?: { [key: string]: any }) => {
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: metadata,
-          emailRedirectTo: `${window.location.origin}/dashboard`
-        },
-      });
-      if (error) throw error;
+      const { success, error } = await AuthService.signUp(email, password, metadata);
+      
+      if (!success && error) {
+        toast({
+          title: "Sign up failed",
+          description: error,
+          variant: "destructive"
+        });
+        throw new Error(error);
+      }
       
       toast({
         title: "Registration successful",
@@ -117,36 +113,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } catch (error: any) {
       console.error("Sign up error:", error.message);
-      toast({
-        title: "Sign up failed",
-        description: error.message,
-        variant: "destructive"
-      });
       throw error;
     }
   };
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      const { success, error } = await AuthService.signOut();
+      
+      if (!success && error) {
+        toast({
+          title: "Sign out failed",
+          description: error,
+          variant: "destructive"
+        });
+        throw new Error(error);
+      }
     } catch (error: any) {
       console.error("Sign out error:", error.message);
-      toast({
-        title: "Sign out failed",
-        description: error.message,
-        variant: "destructive"
-      });
       throw error;
     }
   };
 
   const resetPassword = async (email: string) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) throw error;
+      const { success, error } = await AuthService.resetPassword(email);
+      
+      if (!success && error) {
+        toast({
+          title: "Reset password failed",
+          description: error,
+          variant: "destructive"
+        });
+        throw new Error(error);
+      }
       
       toast({
         title: "Password reset email sent",
@@ -154,21 +154,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } catch (error: any) {
       console.error("Reset password error:", error.message);
-      toast({
-        title: "Reset password failed",
-        description: error.message,
-        variant: "destructive"
-      });
       throw error;
     }
   };
 
   const updatePassword = async (password: string) => {
     try {
-      const { error } = await supabase.auth.updateUser({
-        password,
-      });
-      if (error) throw error;
+      const { success, error } = await AuthService.updatePassword(password);
+      
+      if (!success && error) {
+        toast({
+          title: "Update password failed",
+          description: error,
+          variant: "destructive"
+        });
+        throw new Error(error);
+      }
       
       toast({
         title: "Password updated successfully",
@@ -176,11 +177,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } catch (error: any) {
       console.error("Update password error:", error.message);
-      toast({
-        title: "Update password failed",
-        description: error.message,
-        variant: "destructive"
-      });
       throw error;
     }
   };
