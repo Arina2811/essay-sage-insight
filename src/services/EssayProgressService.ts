@@ -28,12 +28,16 @@ export class EssayProgressService {
       const { data, error } = await supabase
         .from('essay_analyses')
         .select('created_at, overall_score')
-        .eq('user_id', userId)
+        .eq('user_id', userId as string)
         .order('created_at', { ascending: false });
         
       if (error) {
         console.error("Error fetching weekly progress:", error);
         throw error;
+      }
+      
+      if (!data || data.length === 0) {
+        return [];
       }
       
       // Group by week and calculate statistics
@@ -46,6 +50,8 @@ export class EssayProgressService {
       
       // Process each essay and group by week
       data.forEach(item => {
+        if (!item.created_at) return;
+        
         const date = new Date(item.created_at);
         // Get ISO week number (1-53)
         const week = getWeekNumber(date);
@@ -93,12 +99,16 @@ export class EssayProgressService {
       const { data, error } = await supabase
         .from('essay_analyses')
         .select('created_at, overall_score')
-        .eq('user_id', userId)
+        .eq('user_id', userId as string)
         .order('created_at', { ascending: false });
         
       if (error) {
         console.error("Error fetching monthly progress:", error);
         throw error;
+      }
+      
+      if (!data || data.length === 0) {
+        return [];
       }
       
       // Group by month and calculate statistics
@@ -111,6 +121,8 @@ export class EssayProgressService {
       
       // Process each essay and group by month
       data.forEach(item => {
+        if (!item.created_at) return;
+        
         const date = new Date(item.created_at);
         const month = date.getMonth() + 1; // JavaScript months are 0-indexed
         
@@ -156,7 +168,7 @@ export class EssayProgressService {
       const { data, error } = await supabase
         .from('essay_analyses')
         .select('analysis_result, overall_score')
-        .eq('user_id', userId)
+        .eq('user_id', userId as string)
         .gte('created_at', thirtyDaysAgo.toISOString())
         .order('created_at', { ascending: false });
         
@@ -169,12 +181,14 @@ export class EssayProgressService {
         return "No recent essays found. Submit more essays to receive personalized feedback.";
       }
       
-      // Generate feedback based on recent essay data
-      const averageScore = data.reduce((sum, essay) => sum + (essay.overall_score || 0), 0) / data.length;
+      // Generate feedback based on recent essay data with proper null checking
+      const averageScore = data.reduce((sum, essay) => sum + (essay?.overall_score || 0), 0) / data.length;
       
       // Collect common feedback points
       const feedbackPoints: Record<string, number> = {};
       data.forEach(essay => {
+        if (!essay || !essay.analysis_result) return;
+        
         // Type cast analysis_result to EssayAnalysisResult
         const analysis = essay.analysis_result as unknown as EssayAnalysisResult;
         

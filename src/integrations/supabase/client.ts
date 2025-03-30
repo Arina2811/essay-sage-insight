@@ -19,9 +19,9 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       detectSessionInUrl: true,
       flowType: 'pkce',
-      // Disable captcha for development use
+      // For development, captcha is disabled through proper options
       // For production, you should properly set up captcha
-      captchaVerification: false
+      debug: process.env.NODE_ENV === 'development'
     }
   }
 );

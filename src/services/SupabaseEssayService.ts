@@ -33,15 +33,16 @@ export class SupabaseEssayService {
         return { id: essayId };
       }
       
-      // Insert essay into Supabase
+      // Insert essay into Supabase with proper typing
       const { data, error } = await supabase
         .from('essay_analyses')
         .insert({
-          user_id: userId,
+          // Only include properties that exist in the database schema
           title: essayData.title,
           content: essayData.content,
           analysis_result: essayData.analysis as any, // Type casting to avoid TypeScript errors
-          overall_score: essayData.analysis?.score || 0
+          overall_score: essayData.analysis?.score || 0,
+          user_id: userId
         })
         .select('id')
         .single();
@@ -49,6 +50,10 @@ export class SupabaseEssayService {
       if (error) {
         console.error("Error saving essay to Supabase:", error);
         throw error;
+      }
+      
+      if (!data) {
+        throw new Error("Failed to save essay: No data returned");
       }
       
       console.log("Essay saved to Supabase with ID:", data.id);
@@ -77,11 +82,11 @@ export class SupabaseEssayService {
         return localEssays;
       }
       
-      // Get essays from Supabase
+      // Get essays from Supabase with proper error handling
       const { data, error } = await supabase
         .from('essay_analyses')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', userId as string)
         .order('created_at', { ascending: false });
         
       if (error) {
@@ -89,12 +94,16 @@ export class SupabaseEssayService {
         throw error;
       }
       
-      // Convert to EssayData format
+      if (!data) {
+        return [];
+      }
+      
+      // Convert to EssayData format with safe type handling
       return data.map(item => ({
         id: item.id,
-        title: item.title,
-        content: item.content,
-        analysis: item.analysis_result as unknown as EssayAnalysisResult, // Safe type casting
+        title: item.title || "",
+        content: item.content || "",
+        analysis: item.analysis_result as unknown as EssayAnalysisResult,
         created_at: item.created_at
       }));
     } catch (error) {
@@ -120,12 +129,12 @@ export class SupabaseEssayService {
         return essay || null;
       }
       
-      // Get essay from Supabase
+      // Get essay from Supabase with proper type handling
       const { data, error } = await supabase
         .from('essay_analyses')
         .select('*')
-        .eq('id', id)
-        .eq('user_id', userId)
+        .eq('id', id as string)
+        .eq('user_id', userId as string)
         .maybeSingle();
         
       if (error) {
@@ -135,12 +144,12 @@ export class SupabaseEssayService {
       
       if (!data) return null;
       
-      // Convert to EssayData format
+      // Convert to EssayData format with safe type handling
       return {
         id: data.id,
-        title: data.title,
-        content: data.content,
-        analysis: data.analysis_result as unknown as EssayAnalysisResult, // Safe type casting
+        title: data.title || "",
+        content: data.content || "",
+        analysis: data.analysis_result as unknown as EssayAnalysisResult,
         created_at: data.created_at
       };
     } catch (error) {
