@@ -5,80 +5,55 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Lock, AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { updatePassword } = useAuth();
 
   useEffect(() => {
     // Check if we have a session (user came from a password reset email)
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       if (!data.session) {
-        toast({
-          title: "Invalid access",
-          description: "Please use the reset link sent to your email.",
-          variant: "destructive"
-        });
-        navigate("/sign-in");
+        setErrorMessage("Invalid access. Please use the reset link sent to your email.");
       }
     };
     
     checkSession();
-  }, [navigate, toast]);
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
     
     if (password !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
-        variant: "destructive"
-      });
+      setErrorMessage("Passwords don't match");
       return;
     }
     
     if (password.length < 6) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive"
-      });
+      setErrorMessage("Password must be at least 6 characters long");
       return;
     }
     
     setIsLoading(true);
     
     try {
-      const { error } = await supabase.auth.updateUser({
-        password,
-      });
-      
-      if (error) {
-        throw error;
-      }
-      
-      toast({
-        title: "Password reset successful",
-        description: "Your password has been reset. You can now sign in with your new password."
-      });
+      await updatePassword(password);
       
       // Sign out after password reset
       await supabase.auth.signOut();
       navigate("/sign-in");
     } catch (error: any) {
-      toast({
-        title: "Password reset failed",
-        description: error.message || "Please try again later.",
-        variant: "destructive"
-      });
+      setErrorMessage(error.message || "Password reset failed. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -95,6 +70,13 @@ const ResetPassword = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {errorMessage && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="password">New Password</Label>

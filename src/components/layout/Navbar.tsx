@@ -1,11 +1,22 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut, bypassAuth } = useAuth();
+  const navigate = useNavigate();
 
   const navItems = [
     { title: "Essay Analysis", path: "/analysis" },
@@ -13,6 +24,15 @@ const Navbar = () => {
     { title: "Essay Library", path: "/history" },
     { title: "Settings", path: "/settings" },
   ];
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate("/");
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  };
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-gray-900/95 backdrop-blur-md border-b border-white/10">
@@ -37,16 +57,52 @@ const Navbar = () => {
             ))}
             
             <div className="flex items-center ml-4 space-x-3">
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/sign-in" className="text-gray-300 hover:text-primary">
-                  Sign In
-                </Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link to="/sign-up">
-                  Sign Up
-                </Link>
-              </Button>
+              {!user && !bypassAuth ? (
+                <>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/sign-in" className="text-gray-300 hover:text-primary">
+                      Sign In
+                    </Link>
+                  </Button>
+                  <Button size="sm" asChild>
+                    <Link to="/sign-up">
+                      Sign Up
+                    </Link>
+                  </Button>
+                </>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>
+                      {user ? `${user.email}` : "Guest Mode"}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/settings" className="w-full cursor-pointer">
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    {user && (
+                      <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Sign out</span>
+                      </DropdownMenuItem>
+                    )}
+                    {!user && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/sign-in" className="w-full cursor-pointer">
+                          Sign In
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
 
@@ -84,20 +140,49 @@ const Navbar = () => {
             ))}
             
             <div className="flex flex-col space-y-2 pt-2 pb-3 border-t border-gray-700">
-              <Link
-                to="/sign-in"
-                className="text-gray-300 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
-                onClick={() => setIsOpen(false)}
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/sign-up"
-                className="bg-primary text-white block px-3 py-2 rounded-md text-base font-medium"
-                onClick={() => setIsOpen(false)}
-              >
-                Sign Up
-              </Link>
+              {!user && !bypassAuth ? (
+                <>
+                  <Link
+                    to="/sign-in"
+                    className="text-gray-300 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/sign-up"
+                    className="bg-primary text-white block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <div className="px-3 py-2 text-gray-400 text-sm">
+                    {user ? `Signed in as ${user.email}` : "Guest Mode"}
+                  </div>
+                  <Link
+                    to="/settings"
+                    className="text-gray-300 hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Settings
+                  </Link>
+                  {user && (
+                    <button
+                      onClick={() => {
+                        handleSignOut();
+                        setIsOpen(false);
+                      }}
+                      className="text-red-400 hover:text-red-300 flex items-center px-3 py-2 rounded-md text-base font-medium"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign out
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>

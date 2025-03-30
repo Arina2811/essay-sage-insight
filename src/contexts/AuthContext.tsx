@@ -2,15 +2,18 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextProps {
   session: Session | null;
   user: User | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signUp: (email: string, password: string, metadata?: { [key: string]: any }) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
   bypassAuth: boolean;
   setBypassAuth: (bypass: boolean) => void;
 }
@@ -21,7 +24,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [bypassAuth, setBypassAuth] = useState(true); // Setting default to true to bypass auth
+  const [bypassAuth, setBypassAuth] = useState(true); // Default to true to bypass auth
+  const { toast } = useToast();
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -46,31 +50,124 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("Sign in error:", error.message);
+      toast({
+        title: "Sign in failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("Google sign in error:", error.message);
+      toast({
+        title: "Google sign in failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   const signUp = async (email: string, password: string, metadata?: { [key: string]: any }) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: metadata,
-      },
-    });
-    if (error) throw error;
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata,
+          emailRedirectTo: `${window.location.origin}/dashboard`
+        },
+      });
+      if (error) throw error;
+      
+      toast({
+        title: "Registration successful",
+        description: "Please check your email to confirm your account."
+      });
+    } catch (error: any) {
+      console.error("Sign up error:", error.message);
+      toast({
+        title: "Sign up failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("Sign out error:", error.message);
+      toast({
+        title: "Sign out failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    if (error) throw error;
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      
+      toast({
+        title: "Password reset email sent",
+        description: "Please check your inbox for the password reset link."
+      });
+    } catch (error: any) {
+      console.error("Reset password error:", error.message);
+      toast({
+        title: "Reset password failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
+  const updatePassword = async (password: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password,
+      });
+      if (error) throw error;
+      
+      toast({
+        title: "Password updated successfully",
+        description: "Your password has been changed."
+      });
+    } catch (error: any) {
+      console.error("Update password error:", error.message);
+      toast({
+        title: "Update password failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   return (
@@ -80,9 +177,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isLoading,
         signIn,
+        signInWithGoogle,
         signUp,
         signOut,
         resetPassword,
+        updatePassword,
         bypassAuth,
         setBypassAuth,
       }}
