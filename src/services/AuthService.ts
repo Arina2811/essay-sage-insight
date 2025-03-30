@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -41,7 +40,11 @@ export class AuthService {
 
   static async signUp(email: string, password: string, metadata?: { [key: string]: any }) {
     try {
-      const { error } = await supabase.auth.signUp({
+      // Add additional logging to help debug signup issues
+      console.log("Starting signup process with email:", email);
+      console.log("Metadata:", metadata);
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -49,11 +52,34 @@ export class AuthService {
           emailRedirectTo: `${window.location.origin}/dashboard`
         },
       });
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Signup error details:", error);
+        throw error;
+      }
+      
+      console.log("Signup response:", data);
+      
+      // Check if signups are disabled
+      if (error && error.message.includes('Signups not allowed')) {
+        return { 
+          success: false, 
+          error: "Signups are currently disabled. Please contact the administrator to enable signups." 
+        };
+      }
       
       return { success: true };
     } catch (error: any) {
       console.error("Sign up error:", error.message);
+      
+      // Special handling for the signups not allowed error
+      if (error.message.includes('Signups not allowed')) {
+        return { 
+          success: false, 
+          error: "Signups are currently disabled. Please contact the administrator to enable signups." 
+        };
+      }
+      
       return { success: false, error: error.message };
     }
   }
