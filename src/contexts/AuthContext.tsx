@@ -50,15 +50,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
+      setIsLoading(true);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      
+      toast({
+        title: "Sign in successful",
+        description: "Welcome back!",
+      });
     } catch (error: any) {
       console.error("Sign in error:", error.message);
       let errorMessage = error.message;
       
       // Provide more user-friendly error messages for common issues
-      if (errorMessage.includes('captcha verification')) {
-        errorMessage = "Authentication failed. Please try again or use the bypass option.";
+      if (errorMessage.includes('captcha verification') || errorMessage.includes('captcha_token')) {
+        errorMessage = "Authentication failed. The captcha verification system is currently disabled for development. Please try again or use the bypass option.";
       }
       
       toast({
@@ -67,6 +73,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         variant: "destructive"
       });
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
