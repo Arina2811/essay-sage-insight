@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,9 +54,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
     } catch (error: any) {
       console.error("Sign in error:", error.message);
+      let errorMessage = error.message;
+      
+      // Provide more user-friendly error messages for common issues
+      if (errorMessage.includes('captcha verification')) {
+        errorMessage = "Authentication failed. Please try again or use the bypass option.";
+      }
+      
       toast({
         title: "Sign in failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
       throw error;

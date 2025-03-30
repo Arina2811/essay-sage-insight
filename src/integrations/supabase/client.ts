@@ -18,7 +18,10 @@ export const supabase = createClient<Database>(
       storageKey: 'writeright-auth',
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      flowType: 'pkce'
+      flowType: 'pkce',
+      // Disable captcha for development use
+      // For production, you should properly set up captcha
+      captchaVerification: false
     }
   }
 );
