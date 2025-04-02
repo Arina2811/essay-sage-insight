@@ -107,9 +107,11 @@ export class GeminiService {
     }
   }
 
-  static async analyzeEssay(essayText: string): Promise<GeminiResponse> {
+  static async analyzeEssay(essayText: string, temperature: number = 0.3, intensityPrompt: string = ""): Promise<GeminiResponse> {
     return this.generateContent({
-      prompt: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, and overall effectiveness. Be specific about strengths and areas for improvement.
+      prompt: `${intensityPrompt}
+
+      Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, and overall effectiveness. Be specific about strengths and areas for improvement.
       Format your analysis as a JSON object with these fields:
       {
         "overallScore": number from 0-100,
@@ -139,7 +141,7 @@ export class GeminiService {
       Here's the essay to analyze:
       
       ${essayText}`,
-      temperature: 0.3, // Lower temperature for more structured analysis
+      temperature: temperature, // Use passed temperature to adjust feedback intensity
     });
   }
 

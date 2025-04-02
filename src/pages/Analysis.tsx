@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EssayAnalysisService } from "@/services/EssayAnalysisService";
 import { EssayAnalysisResult } from "@/types/essay";
 import { useNavigate } from "react-router-dom";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const Analysis = () => {
   const [essay, setEssay] = useState("");
@@ -19,6 +20,7 @@ const Analysis = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<EssayAnalysisResult | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [feedbackLevel, setFeedbackLevel] = useState("moderate");
   const { toast: uiToast } = useToast();
   const navigate = useNavigate();
 
@@ -54,8 +56,8 @@ const Analysis = () => {
         });
       }, 300);
 
-      // Call analysis service
-      const result = await EssayAnalysisService.analyzeEssay(essay);
+      // Call analysis service with feedback level
+      const result = await EssayAnalysisService.analyzeEssay(essay, feedbackLevel);
       
       clearInterval(progressInterval);
       setAnalysisProgress(100);
@@ -109,6 +111,35 @@ const Analysis = () => {
               onChange={(e) => setEssayTitle(e.target.value)}
               className="mb-4"
             />
+            
+            <div className="mb-4">
+              <h3 className="text-sm font-medium mb-2">Feedback Intensity</h3>
+              <RadioGroup
+                value={feedbackLevel}
+                onValueChange={setFeedbackLevel}
+                className="flex space-x-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="lenient" id="lenient" />
+                  <Label htmlFor="lenient">Lenient</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="moderate" id="moderate" />
+                  <Label htmlFor="moderate">Moderate</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="strict" id="strict" />
+                  <Label htmlFor="strict">Strict</Label>
+                </div>
+              </RadioGroup>
+              <p className="text-xs text-muted-foreground mt-1">
+                {feedbackLevel === "strict" 
+                  ? "Provides detailed criticism covering all potential improvements" 
+                  : feedbackLevel === "lenient" 
+                    ? "Focus on major improvements with gentler feedback" 
+                    : "Balanced feedback with both major and minor suggestions"}
+              </p>
+            </div>
           </div>
           <Textarea
             placeholder="Paste or type your essay here..."
