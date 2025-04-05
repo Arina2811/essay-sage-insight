@@ -14,6 +14,7 @@ interface AuthContextProps {
   updatePassword: (password: string) => Promise<void>;
   bypassAuth: boolean;
   setBypassAuth: (bypass: boolean) => void;
+  signInWithGoogle: () => Promise<void>; // Added missing property
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
