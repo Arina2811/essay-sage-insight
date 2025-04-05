@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +12,6 @@ interface AuthContextProps {
   user: User | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>; // Add this method
   signUp: (email: string, password: string, metadata?: { [key: string]: any }) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -94,25 +92,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // Implement the signInWithGoogle method
-  const signInWithGoogle = async () => {
-    try {
-      const { success, error } = await AuthService.signInWithGoogle();
-      
-      if (!success && error) {
-        toast({
-          title: "Google sign in failed",
-          description: error,
-          variant: "destructive"
-        });
-        throw new Error(error);
-      }
-    } catch (error: any) {
-      console.error("Google sign in error:", error.message);
-      throw error;
     }
   };
 
@@ -210,7 +189,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isLoading,
         signIn,
-        signInWithGoogle, // Add this to the context value
         signUp,
         signOut,
         resetPassword,
