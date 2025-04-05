@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { GeminiService } from "./GeminiService";
 
@@ -16,10 +15,29 @@ export interface PlagiarismResult {
 export class PlagiarismService {
   static async checkPlagiarism(text: string): Promise<PlagiarismResult> {
     try {
-      // Check if Gemini API key is available
-      const apiKey = GeminiService.getApiKey();
+      // Check if OpenAI API key is available first
+      const openAIKey = GeminiService.getOpenAIApiKey();
       
-      if (apiKey) {
+      if (openAIKey) {
+        try {
+          // Use OpenAI for enhanced plagiarism detection
+          console.log("Using OpenAI for plagiarism detection");
+          
+          const openAIResponse = await this.checkWithOpenAI(text);
+          if (openAIResponse) {
+            return openAIResponse;
+          }
+        } catch (openAIError) {
+          console.error("OpenAI plagiarism check failed, trying Gemini instead:", openAIError);
+          // Continue to Gemini if OpenAI fails
+        }
+      }
+      
+      // Fall back to Gemini if OpenAI is not available or failed
+      // Check if Gemini API key is available
+      const geminiKey = GeminiService.getApiKey();
+      
+      if (geminiKey) {
         // Use Gemini API for enhanced plagiarism detection
         console.log("Using Gemini AI for plagiarism detection");
         
@@ -53,14 +71,71 @@ export class PlagiarismService {
           return this.fallbackBertDetection(text);
         }
       } else {
-        // No Gemini API key, use BERT-based detection
-        console.log("No Gemini API key, using BERT-based semantic matching");
+        // No AI API keys, use BERT-based detection
+        console.log("No AI API keys, using BERT-based semantic matching");
         return this.fallbackBertDetection(text);
       }
     } catch (error) {
       console.error("Error checking plagiarism:", error);
       toast.error("Failed to check plagiarism. Please try again later.");
       throw error;
+    }
+  }
+
+  private static async checkWithOpenAI(text: string): Promise<PlagiarismResult | null> {
+    try {
+      // Construct prompt for OpenAI
+      const prompt = `Analyze the following text for potential plagiarism. Identify any common academic phrases, widely used expressions, or potential verbatim copies that might need citation. Do not falsely flag original content.
+      
+      Format your response as a plain JSON object with these fields - DO NOT include any markdown formatting, code blocks, or extra text:
+      {
+        "originalityScore": number from 0-100,
+        "matches": [
+          {
+            "text": "matched text excerpt",
+            "matchPercentage": percentage of similarity,
+            "source": "general description of where this might be common",
+            "recommendation": "your recommendation"
+          }
+        ]
+      }
+      
+      Here's the text to analyze:
+      
+      ${text}`;
+
+      // Manually construct OpenAI API call here instead of using GeminiService
+      // This is a placeholder implementation to be replaced with actual OpenAI integration
+      // For now, we'll just use the client from the GeminiService, which now supports OpenAI
+      const geminiService = GeminiService.generateContent({
+        prompt,
+        temperature: 0.2,
+      });
+
+      const result = await geminiService;
+      
+      if (result.status === 'success' && result.text) {
+        // Clean the response text
+        const cleanedText = result.text
+          .replace(/```json\s*/g, '')
+          .replace(/```\s*$/g, '')
+          .replace(/```/g, '')
+          .trim();
+          
+        // Parse the JSON response
+        const parsedResult = JSON.parse(cleanedText);
+          
+        // Convert to our PlagiarismResult format
+        return {
+          originalityScore: parsedResult.originalityScore || 95,
+          matches: parsedResult.matches || []
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Error in OpenAI plagiarism check:", error);
+      return null;
     }
   }
 

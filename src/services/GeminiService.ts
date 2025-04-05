@@ -3,6 +3,7 @@ import { toast } from "sonner";
 
 // This key would typically be stored in environment variables or Supabase secrets
 let geminiApiKey: string | null = null;
+let openAIApiKey: string | null = null;
 
 export interface GeminiRequestOptions {
   prompt: string;
@@ -40,6 +41,26 @@ export class GeminiService {
     localStorage.removeItem('gemini_api_key');
   }
 
+  static setOpenAIApiKey(key: string) {
+    openAIApiKey = key;
+    // Store in localStorage for persistence across page reloads
+    localStorage.setItem('openai_api_key', key);
+    return true;
+  }
+
+  static getOpenAIApiKey(): string | null {
+    // Try to load from localStorage if not already in memory
+    if (!openAIApiKey) {
+      openAIApiKey = localStorage.getItem('openai_api_key');
+    }
+    return openAIApiKey;
+  }
+
+  static clearOpenAIApiKey() {
+    openAIApiKey = null;
+    localStorage.removeItem('openai_api_key');
+  }
+
   static getFeedbackLevel(): 'lenient' | 'moderate' | 'strict' {
     const savedLevel = localStorage.getItem('feedbackLevel');
     if (savedLevel && ['lenient', 'moderate', 'strict'].includes(savedLevel)) {
@@ -49,10 +70,23 @@ export class GeminiService {
   }
 
   static async generateContent(options: GeminiRequestOptions): Promise<GeminiResponse> {
+    // First try OpenAI if available
+    const openAIKey = this.getOpenAIApiKey();
+    if (openAIKey) {
+      try {
+        console.log("Using OpenAI API for content generation");
+        return await this.generateWithOpenAI(options, openAIKey);
+      } catch (error) {
+        console.error("Error with OpenAI API, falling back to Gemini:", error);
+        // Fall back to Gemini if OpenAI fails
+      }
+    }
+    
+    // Use Gemini as fallback or if OpenAI is not available
     const apiKey = this.getApiKey();
     
     if (!apiKey) {
-      toast.error("Gemini API key is not set. Using fallback analysis method instead.");
+      toast.error("No AI API keys are set. Using fallback analysis method instead.");
       return {
         text: "",
         status: 'error',
@@ -129,6 +163,63 @@ export class GeminiService {
         errorMessage: error instanceof Error ? error.message : "Unknown error"
       };
     }
+  }
+
+  private static async generateWithOpenAI(options: GeminiRequestOptions, apiKey: string): Promise<GeminiResponse> {
+    console.log("Generating content with OpenAI...");
+    
+    // Apply feedback level to prompt if it's not provided
+    const feedbackLevel = options.feedbackLevel || this.getFeedbackLevel();
+    let prompt = options.prompt;
+    
+    // Add feedback level instructions for essay analysis
+    if (prompt.includes("academic essay") || prompt.includes("analyze")) {
+      const levelInstructions = {
+        'lenient': "Provide gentle, positive feedback focusing only on major improvements. Highlight strengths and offer constructive suggestions for the most important issues.",
+        'moderate': "Provide balanced feedback with both strengths and areas for improvement. Include suggestions for both major and minor issues.",
+        'strict': "Provide detailed, thorough feedback with comprehensive critique. Focus on all aspects that could be improved, with specific recommendations for each issue."
+      };
+      
+      prompt = `${prompt}\n\nFeedback level: ${feedbackLevel}. ${levelInstructions[feedbackLevel]}`;
+    }
+    
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert essay analyst providing detailed feedback on academic essays."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: options.temperature || 0.7,
+        max_tokens: options.maxOutputTokens || 2048,
+        top_p: options.topP || 0.95,
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("OpenAI API error:", errorData);
+      throw new Error(errorData.error?.message || "Error generating content with OpenAI");
+    }
+
+    const data = await response.json();
+    const generatedText = data.choices[0]?.message?.content || "";
+    
+    return {
+      text: generatedText,
+      status: 'success'
+    };
   }
 
   static async analyzeEssay(essayText: string): Promise<GeminiResponse> {

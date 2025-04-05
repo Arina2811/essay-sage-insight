@@ -12,11 +12,11 @@ import { supabase } from "@/integrations/supabase/client";
 export class EssayAnalysisService {
   static async analyzeEssay(essayText: string): Promise<EssayAnalysisResult> {
     try {
-      // Check if we should use advanced NLP with Supabase functions
-      const useAdvancedNLP = await this.shouldUseAdvancedNLP();
+      // Check if we should use advanced AI with Supabase functions
+      const useAdvancedAI = await this.shouldUseAdvancedAI();
       
-      if (useAdvancedNLP) {
-        console.log("Using Supabase Edge Functions for advanced NLP analysis");
+      if (useAdvancedAI) {
+        console.log("Using Supabase Edge Functions for advanced AI analysis");
         try {
           const { data, error } = await supabase.functions.invoke('analyze-essay', {
             body: { text: essayText }
@@ -24,15 +24,15 @@ export class EssayAnalysisService {
           
           if (error) throw error;
           
-          console.log("Received analysis from Supabase Edge Function:", data);
+          console.log(`Received analysis from Supabase Edge Function (using ${data.provider || 'unknown'} model):`, data);
           return data.analysis;
         } catch (edgeFunctionError) {
-          console.error("Edge function error, falling back to Gemini:", edgeFunctionError);
-          // Fall back to Gemini if edge function fails
-          return await this.fallbackToGemini(essayText);
+          console.error("Edge function error, falling back to client-side AI:", edgeFunctionError);
+          // Fall back to client-side AI models if edge function fails
+          return await this.fallbackToLocalAI(essayText);
         }
       } else {
-        return await this.fallbackToGemini(essayText);
+        return await this.fallbackToLocalAI(essayText);
       }
     } catch (error) {
       console.error("Error analyzing essay:", error);
@@ -42,9 +42,9 @@ export class EssayAnalysisService {
   }
 
   /**
-   * Determine if we should use advanced NLP with Supabase
+   * Determine if we should use advanced AI with Supabase
    */
-  private static async shouldUseAdvancedNLP(): Promise<boolean> {
+  private static async shouldUseAdvancedAI(): Promise<boolean> {
     // Check if user is authenticated with Supabase
     const { data } = await supabase.auth.getSession();
     const isAuthenticated = !!data.session;
@@ -67,18 +67,27 @@ export class EssayAnalysisService {
   }
 
   /**
-   * Fall back to Gemini-based analysis
+   * Fall back to client-side AI analysis
    */
-  private static async fallbackToGemini(essayText: string): Promise<EssayAnalysisResult> {
-    // Check if Gemini API key is available
-    const apiKey = GeminiService.getApiKey();
+  private static async fallbackToLocalAI(essayText: string): Promise<EssayAnalysisResult> {
+    // Check if OpenAI API key is available
+    const openAIKey = GeminiService.getOpenAIApiKey();
     
-    if (apiKey) {
+    // Check if Gemini API key is available
+    const geminiKey = GeminiService.getApiKey();
+    
+    if (openAIKey) {
+      console.log("Using OpenAI for enhanced essay analysis");
+      // Placeholder for OpenAI-specific client-side analysis
+      // For now, we'll use the same GeminiEssayService which will use OpenAI
+      // if the key is available (through the updated GeminiService)
+      return await GeminiEssayService.analyzeWithGemini(essayText);
+    } else if (geminiKey) {
       console.log("Using Gemini for enhanced essay analysis");
       return await GeminiEssayService.analyzeWithGemini(essayText);
     } else {
-      // No Gemini API key, use BERT/BART-based analysis
-      console.log("No Gemini API key, using BERT/BART for analysis");
+      // No API keys, use BERT/BART-based analysis
+      console.log("No AI API keys, using BERT/BART for analysis");
       const plagiarismResult = await PlagiarismService.checkPlagiarism(essayText);
       return await EssayStructureService.fallbackBertBartAnalysis(essayText, plagiarismResult);
     }
