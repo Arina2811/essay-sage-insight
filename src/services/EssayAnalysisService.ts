@@ -10,7 +10,7 @@ import { SupabaseEssayService } from "./SupabaseEssayService";
 import { supabase } from "@/integrations/supabase/client";
 
 export class EssayAnalysisService {
-  static async analyzeEssay(essayText: string, feedbackLevel: string = "moderate"): Promise<EssayAnalysisResult> {
+  static async analyzeEssay(essayText: string): Promise<EssayAnalysisResult> {
     try {
       // Check if we should use advanced NLP with Supabase functions
       const useAdvancedNLP = await this.shouldUseAdvancedNLP();
@@ -19,7 +19,7 @@ export class EssayAnalysisService {
         console.log("Using Supabase Edge Functions for advanced NLP analysis");
         try {
           const { data, error } = await supabase.functions.invoke('analyze-essay', {
-            body: { text: essayText, feedbackLevel }
+            body: { text: essayText }
           });
           
           if (error) throw error;
@@ -29,10 +29,10 @@ export class EssayAnalysisService {
         } catch (edgeFunctionError) {
           console.error("Edge function error, falling back to Gemini:", edgeFunctionError);
           // Fall back to Gemini if edge function fails
-          return await this.fallbackToGemini(essayText, feedbackLevel);
+          return await this.fallbackToGemini(essayText);
         }
       } else {
-        return await this.fallbackToGemini(essayText, feedbackLevel);
+        return await this.fallbackToGemini(essayText);
       }
     } catch (error) {
       console.error("Error analyzing essay:", error);
@@ -69,18 +69,18 @@ export class EssayAnalysisService {
   /**
    * Fall back to Gemini-based analysis
    */
-  private static async fallbackToGemini(essayText: string, feedbackLevel: string = "moderate"): Promise<EssayAnalysisResult> {
+  private static async fallbackToGemini(essayText: string): Promise<EssayAnalysisResult> {
     // Check if Gemini API key is available
     const apiKey = GeminiService.getApiKey();
     
     if (apiKey) {
-      console.log(`Using Gemini for enhanced essay analysis with ${feedbackLevel} feedback level`);
-      return await GeminiEssayService.analyzeWithGemini(essayText, feedbackLevel);
+      console.log("Using Gemini for enhanced essay analysis");
+      return await GeminiEssayService.analyzeWithGemini(essayText);
     } else {
       // No Gemini API key, use BERT/BART-based analysis
-      console.log(`No Gemini API key, using BERT/BART for analysis with ${feedbackLevel} feedback level`);
+      console.log("No Gemini API key, using BERT/BART for analysis");
       const plagiarismResult = await PlagiarismService.checkPlagiarism(essayText);
-      return await EssayStructureService.fallbackBertBartAnalysis(essayText, plagiarismResult, feedbackLevel);
+      return await EssayStructureService.fallbackBertBartAnalysis(essayText, plagiarismResult);
     }
   }
 
