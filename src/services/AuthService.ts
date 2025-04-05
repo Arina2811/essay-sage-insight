@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -21,7 +22,8 @@ export class AuthService {
     }
   }
 
-  static async signInWithGoogle() {
+  // Google sign-in is currently disabled due to 404 errors
+  /* static async signInWithGoogle() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -36,7 +38,7 @@ export class AuthService {
       console.error("Google sign in error:", error.message);
       return { success: false, error: error.message };
     }
-  }
+  } */
 
   static async signUp(email: string, password: string, metadata?: { [key: string]: any }) {
     try {
