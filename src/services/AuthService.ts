@@ -22,6 +22,23 @@ export class AuthService {
     }
   }
 
+  static async signInWithGoogle() {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      if (error) throw error;
+      
+      return { success: true };
+    } catch (error: any) {
+      console.error("Google sign in error:", error.message);
+      return { success: false, error: error.message };
+    }
+  }
+
   static async signUp(email: string, password: string, metadata?: { [key: string]: any }) {
     try {
       // Add additional logging to help debug signup issues
