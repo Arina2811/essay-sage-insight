@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,26 +10,39 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { GeminiService } from "@/services/GeminiService";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ShieldCheck } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 const Settings = () => {
   const [feedbackLevel, setFeedbackLevel] = useState("moderate");
   const [fullName, setFullName] = useState("Jane Doe");
   const [email, setEmail] = useState("jane.doe@example.com");
   const [institution, setInstitution] = useState("University of Technology");
-  const [geminiApiKey, setGeminiApiKey] = useState("");
-  const [geminiKeyStatus, setGeminiKeyStatus] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState("");
   const { toast } = useToast();
+  const { user, isAdmin } = useAuth();
 
   useEffect(() => {
-    const savedKey = GeminiService.getApiKey();
-    if (savedKey) {
-      setGeminiApiKey(savedKey);
-      setGeminiKeyStatus(true);
+    // Update email from auth if available
+    if (user?.email) {
+      setEmail(user.email);
     }
-  }, []);
+    
+    // Get avatar from metadata if available
+    if (user?.user_metadata?.avatar_url) {
+      setAvatarUrl(user.user_metadata.avatar_url);
+    }
+    
+    // Get name from metadata if available
+    if (user?.user_metadata?.full_name) {
+      setFullName(user.user_metadata.full_name);
+    }
+  }, [user]);
 
   const handleSave = () => {
+    localStorage.setItem('feedbackLevel', feedbackLevel);
+    
     toast({
       title: "Settings Saved",
       description: "Your preferences have been updated successfully.",
@@ -49,33 +63,19 @@ const Settings = () => {
     });
   };
 
-  const handleGeminiApiKeySave = () => {
-    if (geminiApiKey) {
-      const success = GeminiService.setApiKey(geminiApiKey);
-      if (success) {
-        setGeminiKeyStatus(true);
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarUrl(reader.result as string);
         toast({
-          title: "API Key Saved",
-          description: "Your Gemini API key has been saved successfully.",
+          title: "Avatar Uploaded",
+          description: "Your avatar has been updated successfully.",
         });
-      }
-    } else {
-      toast({
-        title: "API Key Required",
-        description: "Please enter a valid Gemini API key.",
-        variant: "destructive",
-      });
+      };
+      reader.readAsDataURL(file);
     }
-  };
-
-  const handleGeminiApiKeyRemove = () => {
-    GeminiService.clearApiKey();
-    setGeminiApiKey("");
-    setGeminiKeyStatus(false);
-    toast({
-      title: "API Key Removed",
-      description: "Your Gemini API key has been removed successfully.",
-    });
   };
 
   return (
@@ -86,14 +86,24 @@ const Settings = () => {
           <p className="text-muted-foreground mt-2">
             Customize your AI Essay Insight experience
           </p>
+          
+          {isAdmin && (
+            <div className="mt-4">
+              <Link to="/admin-settings">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4" />
+                  Admin Settings
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid grid-cols-4 w-full mb-6 glass">
+          <TabsList className="grid grid-cols-3 w-full mb-6 glass">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
             <TabsTrigger value="account">Account</TabsTrigger>
-            <TabsTrigger value="ai-settings">AI Settings</TabsTrigger>
           </TabsList>
           
           <TabsContent value="profile" className="space-y-6">
@@ -101,10 +111,24 @@ const Settings = () => {
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex flex-col items-center space-y-4">
                   <Avatar className="h-24 w-24">
-                    <AvatarImage src="https://github.com/shadcn.png" alt="User avatar" />
-                    <AvatarFallback>JD</AvatarFallback>
+                    {avatarUrl ? (
+                      <AvatarImage src={avatarUrl} alt="User avatar" />
+                    ) : (
+                      <AvatarFallback>{fullName.split(' ').map(n => n[0]).join('').toUpperCase()}</AvatarFallback>
+                    )}
                   </Avatar>
-                  <Button variant="outline" size="sm">Change Avatar</Button>
+                  <label htmlFor="avatar-upload" className="cursor-pointer">
+                    <div className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm">
+                      Change Avatar
+                    </div>
+                    <input 
+                      id="avatar-upload" 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={handleAvatarUpload}
+                    />
+                  </label>
                 </div>
                 
                 <div className="flex-1 space-y-4">
@@ -124,6 +148,7 @@ const Settings = () => {
                       type="email" 
                       value={email} 
                       onChange={(e) => setEmail(e.target.value)} 
+                      readOnly={!!user?.email}
                     />
                   </div>
                   
@@ -343,91 +368,6 @@ const Settings = () => {
                     Download all your data including essays and analysis results.
                   </p>
                   <Button variant="outline">Export All Data</Button>
-                </div>
-              </div>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="ai-settings" className="space-y-6">
-            <Card className="p-6 glass">
-              <h3 className="text-lg font-semibold mb-4">AI API Keys</h3>
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <Label htmlFor="gemini-api-key">Google Gemini API Key</Label>
-                    {geminiKeyStatus && (
-                      <span className="text-sm text-green-500 flex items-center">
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Connected
-                      </span>
-                    )}
-                  </div>
-                  <Input 
-                    id="gemini-api-key" 
-                    type="password" 
-                    value={geminiApiKey} 
-                    onChange={(e) => setGeminiApiKey(e.target.value)}
-                    placeholder="Enter your Gemini API key"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Get your API key from the <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google AI Studio</a>
-                  </p>
-                </div>
-                <div className="flex space-x-2 justify-end">
-                  {geminiKeyStatus && (
-                    <Button variant="outline" onClick={handleGeminiApiKeyRemove}>Remove Key</Button>
-                  )}
-                  <Button onClick={handleGeminiApiKeySave}>Save API Key</Button>
-                </div>
-              </div>
-            </Card>
-            
-            <Card className="p-6 glass">
-              <h3 className="text-lg font-semibold mb-4">AI Models Configuration</h3>
-              <div className="space-y-4">
-                <div className="bg-muted p-4 rounded-md">
-                  <h4 className="font-medium mb-2">Google Gemini Pro</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Google's most capable model for text analysis and generation. Used for high-quality essay analysis, plagiarism detection, and personalized feedback.
-                  </p>
-                  <div className="flex items-start space-x-2">
-                    <div className="bg-primary/10 text-primary text-xs px-2 py-1 rounded">
-                      Active
-                    </div>
-                    <div className="bg-muted-foreground/20 text-muted-foreground text-xs px-2 py-1 rounded">
-                      {geminiKeyStatus ? "Key Configured" : "Key Required"}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-muted p-4 rounded-md">
-                  <h4 className="font-medium mb-2">BERT Model</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Used for semantic understanding and academic text analysis. Provides fallback capabilities when Gemini API key is not configured.
-                  </p>
-                  <div className="flex items-start space-x-2">
-                    <div className="bg-primary/10 text-primary text-xs px-2 py-1 rounded">
-                      Active
-                    </div>
-                    <div className="bg-green-500/20 text-green-500 text-xs px-2 py-1 rounded">
-                      No API Key Required
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-muted p-4 rounded-md">
-                  <h4 className="font-medium mb-2">BART Model</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Used for content generation and text summarization. Provides fallback capabilities when Gemini API key is not configured.
-                  </p>
-                  <div className="flex items-start space-x-2">
-                    <div className="bg-primary/10 text-primary text-xs px-2 py-1 rounded">
-                      Active
-                    </div>
-                    <div className="bg-green-500/20 text-green-500 text-xs px-2 py-1 rounded">
-                      No API Key Required
-                    </div>
-                  </div>
                 </div>
               </div>
             </Card>

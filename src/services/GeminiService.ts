@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // This key would typically be stored in environment variables or Supabase secrets
-let geminiApiKey: string | null = "AIzaSyDm1pVklbG1mtweNxYjunJJM9DkgkrHOro";
+let geminiApiKey: string | null = null;
 
 export interface GeminiRequestOptions {
   prompt: string;
@@ -10,6 +10,7 @@ export interface GeminiRequestOptions {
   maxOutputTokens?: number;
   topP?: number;
   topK?: number;
+  feedbackLevel?: 'lenient' | 'moderate' | 'strict';
 }
 
 export interface GeminiResponse {
@@ -39,11 +40,19 @@ export class GeminiService {
     localStorage.removeItem('gemini_api_key');
   }
 
+  static getFeedbackLevel(): 'lenient' | 'moderate' | 'strict' {
+    const savedLevel = localStorage.getItem('feedbackLevel');
+    if (savedLevel && ['lenient', 'moderate', 'strict'].includes(savedLevel)) {
+      return savedLevel as 'lenient' | 'moderate' | 'strict';
+    }
+    return 'moderate'; // Default
+  }
+
   static async generateContent(options: GeminiRequestOptions): Promise<GeminiResponse> {
     const apiKey = this.getApiKey();
     
     if (!apiKey) {
-      toast.error("Gemini API key is not set. Please add your API key in Settings.");
+      toast.error("Gemini API key is not set. Using fallback analysis method instead.");
       return {
         text: "",
         status: 'error',
@@ -53,6 +62,21 @@ export class GeminiService {
 
     try {
       console.log("Sending request to Gemini API...");
+      
+      // Apply feedback level to prompt if it's not provided
+      const feedbackLevel = options.feedbackLevel || this.getFeedbackLevel();
+      let prompt = options.prompt;
+      
+      // Add feedback level instructions
+      if (prompt.includes("academic essay") || prompt.includes("analyze")) {
+        const levelInstructions = {
+          'lenient': "Provide gentle, positive feedback focusing only on major improvements. Highlight strengths and offer constructive suggestions for the most important issues.",
+          'moderate': "Provide balanced feedback with both strengths and areas for improvement. Include suggestions for both major and minor issues.",
+          'strict': "Provide detailed, thorough feedback with comprehensive critique. Focus on all aspects that could be improved, with specific recommendations for each issue."
+        };
+        
+        prompt = `${prompt}\n\nFeedback level: ${feedbackLevel}. ${levelInstructions[feedbackLevel]}`;
+      }
       
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`,
@@ -66,7 +90,7 @@ export class GeminiService {
               {
                 parts: [
                   {
-                    text: options.prompt,
+                    text: prompt,
                   },
                 ],
               },
@@ -98,7 +122,7 @@ export class GeminiService {
       };
     } catch (error) {
       console.error("Error with Gemini API:", error);
-      toast.error("Failed to generate content with Gemini. Please try again later.");
+      toast.error("Failed to generate content with Gemini. Using fallback analysis method instead.");
       return {
         text: "",
         status: 'error',
@@ -108,6 +132,8 @@ export class GeminiService {
   }
 
   static async analyzeEssay(essayText: string): Promise<GeminiResponse> {
+    const feedbackLevel = this.getFeedbackLevel();
+    
     return this.generateContent({
       prompt: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, and overall effectiveness. Be specific about strengths and areas for improvement.
       Format your analysis as a JSON object with these fields:
@@ -140,6 +166,7 @@ export class GeminiService {
       
       ${essayText}`,
       temperature: 0.3, // Lower temperature for more structured analysis
+      feedbackLevel: feedbackLevel,
     });
   }
 

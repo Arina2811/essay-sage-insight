@@ -10,6 +10,7 @@ import Analysis from "./pages/Analysis";
 import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import Settings from "./pages/Settings";
+import AdminSettings from "./pages/AdminSettings";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -17,6 +18,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { AdminRoute } from "./components/auth/AdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +68,14 @@ const App = () => (
                     <ProtectedRoute>
                       <Settings />
                     </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin-settings" 
+                  element={
+                    <AdminRoute>
+                      <AdminSettings />
+                    </AdminRoute>
                   } 
                 />
                 <Route path="*" element={<NotFound />} />

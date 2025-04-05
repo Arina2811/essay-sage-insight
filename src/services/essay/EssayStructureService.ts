@@ -13,12 +13,13 @@ export class EssayStructureService {
    */
   static async fallbackBertBartAnalysis(
     essayText: string, 
-    plagiarismResult?: any
+    plagiarismResult?: any,
+    feedbackLevel: 'lenient' | 'moderate' | 'strict' = 'moderate'
   ): Promise<EssayAnalysisResult> {
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    console.log("Using BERT for semantic analysis and BART for content generation");
+    console.log(`Using BERT for semantic analysis and BART for content generation with ${feedbackLevel} feedback level`);
     
     // If we have plagiarism results, use them, otherwise default
     const plagiarism = plagiarismResult ? {
@@ -39,36 +40,88 @@ export class EssayStructureService {
       ]
     };
     
-    // For demonstration, return mock analysis data with BERT/BART improvements
-    return {
+    // Base feedback structure
+    let feedback = {
       score: 82,
       structure: {
         score: 80,
-        feedback: "Your essay demonstrates a clear introduction, well-developed body paragraphs, and a cohesive conclusion. The thesis statement is effectively presented early in the introduction. Consider strengthening transitions between the third and fourth paragraphs to improve flow."
+        feedback: ""
       },
       style: {
         score: 85,
-        feedback: "Your writing demonstrates strong academic tone with appropriate formality. The sentence structure is varied and engaging.",
-        suggestions: [
-          "Replace passive constructions with active voice in paragraphs 2 and 5",
-          "Consider using more field-specific terminology when discussing theoretical concepts",
-          "Add more transitional phrases between the third and fourth main arguments",
-          "Vary sentence length in paragraph 3 to improve reading rhythm"
-        ]
+        feedback: "",
+        suggestions: [] as string[]
       },
       thesis: {
         detected: true,
         text: "Technological innovation has fundamentally transformed social interaction, creating both new opportunities for connection and unexpected challenges for interpersonal relationships.",
         score: 78,
-        feedback: "Your thesis effectively presents a nuanced argument with both positive and negative aspects. Consider adding more specificity about which technologies you'll focus on to narrow your scope."
+        feedback: ""
       },
       citations: {
         count: 12,
         format: "APA 7th Edition",
         isValid: true,
-        feedback: "Citations follow APA format correctly. Consider adding one or two more recent sources (past 2 years) to strengthen your contemporary evidence."
+        feedback: ""
       },
       plagiarism: plagiarism
     };
+    
+    // Adjust feedback based on intensity level
+    switch (feedbackLevel) {
+      case 'lenient':
+        feedback.score = 88;
+        feedback.structure.score = 85;
+        feedback.structure.feedback = "Your essay has a good structure with a clear introduction and conclusion. The main arguments flow well.";
+        feedback.style.score = 90;
+        feedback.style.feedback = "Your writing style is engaging and appropriate for academic work.";
+        feedback.style.suggestions = [
+          "Consider adding more transitional phrases between major sections",
+          "Your conclusion could be strengthened with a stronger call to action"
+        ];
+        feedback.thesis.score = 85;
+        feedback.thesis.feedback = "Your thesis is clear and effectively presents your main argument.";
+        feedback.citations.feedback = "Your citations follow the APA format correctly.";
+        break;
+        
+      case 'moderate':
+        feedback.score = 82;
+        feedback.structure.score = 80;
+        feedback.structure.feedback = "Your essay demonstrates a clear introduction, well-developed body paragraphs, and a cohesive conclusion. The thesis statement is effectively presented early in the introduction. Consider strengthening transitions between the third and fourth paragraphs to improve flow.";
+        feedback.style.score = 85;
+        feedback.style.feedback = "Your writing demonstrates strong academic tone with appropriate formality. The sentence structure is varied and engaging.";
+        feedback.style.suggestions = [
+          "Replace passive constructions with active voice in paragraphs 2 and 5",
+          "Consider using more field-specific terminology when discussing theoretical concepts",
+          "Add more transitional phrases between the third and fourth main arguments",
+          "Vary sentence length in paragraph 3 to improve reading rhythm"
+        ];
+        feedback.thesis.score = 78;
+        feedback.thesis.feedback = "Your thesis effectively presents a nuanced argument with both positive and negative aspects. Consider adding more specificity about which technologies you'll focus on to narrow your scope.";
+        feedback.citations.feedback = "Citations follow APA format correctly. Consider adding one or two more recent sources (past 2 years) to strengthen your contemporary evidence.";
+        break;
+        
+      case 'strict':
+        feedback.score = 76;
+        feedback.structure.score = 75;
+        feedback.structure.feedback = "Your essay has a reasonable structure but needs improvement. The introduction should more clearly establish your main arguments. Paragraph 3 seems disconnected from your thesis. The conclusion would benefit from a stronger synthesis of your key points rather than simply restating them.";
+        feedback.style.score = 78;
+        feedback.style.feedback = "Your writing style needs significant improvement to meet academic standards. There are several instances of informal language, and your sentence structure lacks variety.";
+        feedback.style.suggestions = [
+          "Eliminate all contractions throughout the essay to maintain formal academic tone",
+          "Paragraph 1: Replace colloquial expressions with more precise academic terminology",
+          "Paragraphs 2 and 4: Vary sentence structure to avoid monotonous rhythm",
+          "Throughout: Replace vague terms like 'things' and 'stuff' with specific terminology",
+          "Add stronger topic sentences to each paragraph that clearly connect to your thesis",
+          "Paragraph 3: Completely restructure to better support your main argument",
+          "Remove all first-person pronouns to maintain objective academic tone"
+        ];
+        feedback.thesis.score = 72;
+        feedback.thesis.feedback = "Your thesis statement lacks clarity and specificity. It makes an overly broad claim without indicating your specific argument or approach. Revise to clearly state your position and outline the key points you will address.";
+        feedback.citations.feedback = "While your citations follow APA format, they have several issues: 1) You rely too heavily on older sources, 2) Several key claims lack citations altogether, 3) You need more peer-reviewed journal articles rather than websites, 4) Add page numbers for all direct quotations.";
+        break;
+    }
+    
+    return feedback;
   }
 }

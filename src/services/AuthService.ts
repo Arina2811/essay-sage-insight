@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -18,23 +19,6 @@ export class AuthService {
       }
       
       return { success: false, error: errorMessage };
-    }
-  }
-
-  static async signInWithGoogle() {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`
-        }
-      });
-      if (error) throw error;
-      
-      return { success: true };
-    } catch (error: any) {
-      console.error("Google sign in error:", error.message);
-      return { success: false, error: error.message };
     }
   }
 

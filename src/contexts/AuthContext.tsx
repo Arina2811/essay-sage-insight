@@ -5,18 +5,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { AuthService } from '@/services/AuthService';
 
+// List of admin emails
+const ADMIN_EMAILS = ['admin@writeright.app', 'admin@example.com'];
+
 interface AuthContextProps {
   session: Session | null;
   user: User | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
   signUp: (email: string, password: string, metadata?: { [key: string]: any }) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   bypassAuth: boolean;
   setBypassAuth: (bypass: boolean) => void;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -26,6 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [bypassAuth, setBypassAuth] = useState(true); // Default to true to bypass auth
+  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -34,6 +38,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Check if user is an admin
+        if (session?.user) {
+          const userIsAdmin = ADMIN_EMAILS.includes(session.user.email || '');
+          setIsAdmin(userIsAdmin);
+        } else {
+          setIsAdmin(false);
+        }
+        
         setIsLoading(false);
       }
     );
@@ -42,6 +55,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      // Check if user is an admin
+      if (session?.user) {
+        const userIsAdmin = ADMIN_EMAILS.includes(session.user.email || '');
+        setIsAdmin(userIsAdmin);
+      }
+      
       setIsLoading(false);
     });
 
@@ -73,24 +93,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const signInWithGoogle = async () => {
-    try {
-      const { success, error } = await AuthService.signInWithGoogle();
-      
-      if (!success && error) {
-        toast({
-          title: "Google sign in failed",
-          description: error,
-          variant: "destructive"
-        });
-        throw new Error(error);
-      }
-    } catch (error: any) {
-      console.error("Google sign in error:", error.message);
-      throw error;
     }
   };
 
@@ -188,13 +190,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isLoading,
         signIn,
-        signInWithGoogle,
         signUp,
         signOut,
         resetPassword,
         updatePassword,
         bypassAuth,
         setBypassAuth,
+        isAdmin,
       }}
     >
       {children}
