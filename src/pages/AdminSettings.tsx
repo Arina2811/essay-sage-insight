@@ -17,8 +17,7 @@ const AdminSettings = () => {
   useEffect(() => {
     const savedOpenAIKey = GeminiService.getOpenAIApiKey();
     if (!savedOpenAIKey) {
-      toast({
-        title: "API Key Required",
+      toast("API Key Required", {
         description: "Please set up your OpenAI API key for full functionality",
         action: {
           label: "Understand",
