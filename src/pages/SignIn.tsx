@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Lock, AlertCircle } from "lucide-react";
+import { Mail, Lock, AlertCircle, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -18,7 +19,7 @@ const SignIn = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const { signIn, bypassAuth, setBypassAuth } = useAuth();
   
   // Get the intended destination from location state, or default to dashboard
@@ -32,8 +33,7 @@ const SignIn = () => {
     try {
       await signIn(email, password);
       
-      toast({
-        title: "Sign in successful",
+      toast.success("Sign in successful", {
         description: "Welcome back to WriteRight Essay!"
       });
       
@@ -46,18 +46,24 @@ const SignIn = () => {
     }
   };
 
+  const loginAsAdmin = () => {
+    setEmail("admin@writeright.app");
+    setPassword("adminpassword");
+    toast.info("Admin credentials filled in", {
+      description: "Click Sign In to continue as admin"
+    });
+  };
+
   const handleBypassAuth = () => {
     setBypassAuth(!bypassAuth);
     if (!bypassAuth) {
-      toast({
-        title: "Auth bypass enabled",
-        description: "You can now access all features without authentication.",
+      toast.success("Auth bypass enabled", {
+        description: "You can now access all features without authentication."
       });
       navigate(from, { replace: true });
     } else {
-      toast({
-        title: "Auth bypass disabled",
-        description: "Authentication is now required to access protected features.",
+      toast.info("Auth bypass disabled", {
+        description: "Authentication is now required to access protected features."
       });
     }
   };
@@ -73,20 +79,34 @@ const SignIn = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="p-4 mb-4 bg-yellow-100 border border-yellow-400 rounded-md">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="bypass-auth" className="font-medium text-yellow-800">Bypass Authentication</Label>
-                <Switch
-                  id="bypass-auth"
-                  checked={bypassAuth}
-                  onCheckedChange={handleBypassAuth}
-                />
+            <div className="p-4 mb-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-md">
+              <div className="flex items-center gap-2 mb-2">
+                <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <span className="font-medium text-blue-800 dark:text-blue-300">Quick Access</span>
               </div>
-              <p className="mt-1 text-sm text-yellow-700">
-                {bypassAuth 
-                  ? "Auth bypass is enabled. Click the switch to disable it." 
-                  : "Enable this to access the app without authentication."}
+              <p className="text-sm text-blue-700 dark:text-blue-400 mb-2">
+                For testing purposes, you can use the admin account or bypass authentication.
               </p>
+              <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-blue-600 border-blue-300"
+                  onClick={loginAsAdmin}
+                >
+                  Use Admin Credentials
+                </Button>
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="bypass-auth" className="font-medium text-blue-700 dark:text-blue-400 text-sm">
+                    Bypass Authentication
+                  </Label>
+                  <Switch
+                    id="bypass-auth"
+                    checked={bypassAuth}
+                    onCheckedChange={handleBypassAuth}
+                  />
+                </div>
+              </div>
             </div>
             
             {errorMessage && (

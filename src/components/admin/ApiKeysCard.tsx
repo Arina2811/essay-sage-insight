@@ -1,6 +1,6 @@
 
 import { Card } from "@/components/ui/card";
-import { Key, BrainCircuit, ShieldCheck } from "lucide-react";
+import { Key, BrainCircuit, ShieldCheck, Info } from "lucide-react";
 import { ApiKeySection } from "./ApiKeySection";
 
 export const ApiKeysCard = () => {
@@ -13,6 +13,18 @@ export const ApiKeysCard = () => {
         </h3>
         <div className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
           Admin Only
+        </div>
+      </div>
+      
+      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-md p-4 mb-6">
+        <div className="flex items-start">
+          <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-2 flex-shrink-0" />
+          <div>
+            <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300">How to Get API Keys</h4>
+            <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
+              To use AI-powered features, you need to add at least one API key. OpenAI offers a free tier with API credits for new accounts. Sign up at OpenAI or Google AI Studio to get your keys.
+            </p>
+          </div>
         </div>
       </div>
       
@@ -45,6 +57,7 @@ export const ApiKeysCard = () => {
             title="Google Gemini API Key"
             description="Configure Google Gemini as a fallback AI service for essay analysis."
             keyType="gemini"
+            icon={<BrainCircuit className="h-4 w-4 mr-1" />}
             linkText="Google AI Studio"
             linkUrl="https://aistudio.google.com/app/apikey"
           />
