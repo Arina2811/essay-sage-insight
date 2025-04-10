@@ -4,9 +4,17 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, FileCheck, AlertTriangle } from "lucide-react";
+import { 
+  Loader2, 
+  FileCheck, 
+  AlertTriangle, 
+  BrainCircuit, 
+  Sparkles,
+  ShieldCheck
+} from "lucide-react";
 import { PlagiarismService, PlagiarismResult } from "@/services/PlagiarismService";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 const PlagiarismChecker = () => {
   const [text, setText] = useState("");
@@ -61,10 +69,36 @@ const PlagiarismChecker = () => {
     }
   };
 
+  const getAnalysisMethodIcon = (method?: 'openai' | 'gemini' | 'bert') => {
+    switch (method) {
+      case 'openai':
+        return <Sparkles className="h-4 w-4 mr-1" />;
+      case 'gemini':
+        return <BrainCircuit className="h-4 w-4 mr-1" />;
+      case 'bert':
+        return <ShieldCheck className="h-4 w-4 mr-1" />;
+      default:
+        return null;
+    }
+  };
+
+  const getAnalysisMethodName = (method?: 'openai' | 'gemini' | 'bert') => {
+    switch (method) {
+      case 'openai':
+        return "OpenAI";
+      case 'gemini':
+        return "Google Gemini";
+      case 'bert':
+        return "BERT Analysis";
+      default:
+        return "AI Analysis";
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card className="p-6 glass">
-        <h2 className="text-lg font-semibold mb-4">Plagiarism Checker</h2>
+        <h2 className="text-lg font-semibold mb-4">Advanced Plagiarism Checker</h2>
         <Textarea
           placeholder="Paste text to check for plagiarism..."
           value={text}
@@ -74,7 +108,7 @@ const PlagiarismChecker = () => {
         {isChecking && (
           <div className="mb-4">
             <div className="flex justify-between text-sm mb-1">
-              <span>Checking plagiarism...</span>
+              <span>Analyzing content for potential plagiarism...</span>
               <span>{Math.round(checkProgress)}%</span>
             </div>
             <Progress value={checkProgress} className="h-2" />
@@ -89,7 +123,7 @@ const PlagiarismChecker = () => {
             {isChecking ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Checking...
+                Analyzing...
               </>
             ) : (
               "Check Plagiarism"
@@ -101,7 +135,18 @@ const PlagiarismChecker = () => {
       {result && (
         <Card className="p-6 glass">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold">Results</h3>
+            <div className="flex flex-col">
+              <h3 className="text-lg font-semibold">Plagiarism Analysis</h3>
+              <div className="flex items-center mt-1">
+                <Badge variant="outline" className="flex items-center text-xs">
+                  {getAnalysisMethodIcon(result.analysisMethod)}
+                  {getAnalysisMethodName(result.analysisMethod)}
+                </Badge>
+                <Badge variant="outline" className="ml-2 text-xs">
+                  Confidence: {result.confidence || 85}%
+                </Badge>
+              </div>
+            </div>
             <div className="flex items-center">
               {result.originalityScore >= 90 ? (
                 <FileCheck className="h-5 w-5 mr-2 text-green-500" />
@@ -143,6 +188,11 @@ const PlagiarismChecker = () => {
                     </div>
                     <span className="font-medium">{match.matchPercentage}% match</span>
                   </div>
+                  {match.recommendation && (
+                    <div className="mt-2 text-sm bg-blue-50 dark:bg-blue-900/20 p-2 rounded border-l-2 border-blue-500">
+                      <span className="font-medium">Recommendation:</span> {match.recommendation}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
