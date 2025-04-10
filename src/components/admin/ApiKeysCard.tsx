@@ -2,6 +2,8 @@
 import { Card } from "@/components/ui/card";
 import { Key, BrainCircuit, ShieldCheck } from "lucide-react";
 import { ApiKeySection } from "./ApiKeySection";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export const ApiKeysCard = () => {
   return (
@@ -15,6 +17,14 @@ export const ApiKeysCard = () => {
           Admin Only
         </div>
       </div>
+      
+      <Alert className="mb-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Your API keys are stored locally in your browser and are not sent to our servers.
+          They're used to directly call AI services from your browser.
+        </AlertDescription>
+      </Alert>
       
       <div className="space-y-6">
         {/* OpenAI API Key Section - Highlighted as Primary */}

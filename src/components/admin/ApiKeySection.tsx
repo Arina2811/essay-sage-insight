@@ -1,10 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { GeminiService } from "@/services/GeminiService";
-import { CheckCircle, Key, Lock, RotateCw, BrainCircuit } from "lucide-react";
+import { CheckCircle, Key, Lock, RotateCw, BrainCircuit, Copy, Clipboard } from "lucide-react";
+import { toast } from "sonner";
 
 interface ApiKeySectionProps {
   title: string;
@@ -27,10 +28,11 @@ export const ApiKeySection = ({
   const [apiKey, setApiKey] = useState("");
   const [keyStatus, setKeyStatus] = useState(false);
   const [showKey, setShowKey] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
   // Initialize state based on stored keys
-  useState(() => {
+  useEffect(() => {
     const savedKey = isGemini 
       ? GeminiService.getApiKey() 
       : GeminiService.getOpenAIApiKey();
@@ -39,7 +41,21 @@ export const ApiKeySection = ({
       setApiKey(savedKey);
       setKeyStatus(true);
     }
-  });
+  }, [isGemini]);
+
+  const handlePaste = async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      setApiKey(clipboardText.trim());
+    } catch (error) {
+      console.error("Failed to read clipboard:", error);
+      toast({
+        title: "Paste Failed",
+        description: "Could not access clipboard. Please paste manually.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleSave = () => {
     if (!apiKey) {
@@ -51,17 +67,23 @@ export const ApiKeySection = ({
       return;
     }
 
-    const success = isGemini 
-      ? GeminiService.setApiKey(apiKey)
-      : GeminiService.setOpenAIApiKey(apiKey);
+    setIsSaving(true);
     
-    if (success) {
-      setKeyStatus(true);
-      toast({
-        title: "API Key Saved",
-        description: `Your ${isGemini ? "Gemini" : "OpenAI"} API key has been saved successfully.`,
-      });
-    }
+    setTimeout(() => {
+      const success = isGemini 
+        ? GeminiService.setApiKey(apiKey)
+        : GeminiService.setOpenAIApiKey(apiKey);
+      
+      setIsSaving(false);
+      
+      if (success) {
+        setKeyStatus(true);
+        toast({
+          title: "API Key Saved",
+          description: `Your ${isGemini ? "Gemini" : "OpenAI"} API key has been saved successfully.`,
+        });
+      }
+    }, 500); // Short delay to show saving state
   };
 
   const handleRemove = () => {
@@ -104,7 +126,7 @@ export const ApiKeySection = ({
           </span>
         )}
       </div>
-      <div className="flex">
+      <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Input 
             id={`${keyType}-api-key`} 
@@ -118,10 +140,20 @@ export const ApiKeySection = ({
             type="button" 
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
             onClick={() => setShowKey(!showKey)}
+            aria-label={showKey ? "Hide API key" : "Show API key"}
           >
             <Lock className="h-4 w-4" />
           </button>
         </div>
+        <Button 
+          variant="outline" 
+          onClick={handlePaste}
+          type="button"
+          className="gap-1 shrink-0"
+        >
+          <Clipboard className="h-4 w-4" />
+          <span className="hidden sm:inline">Paste</span>
+        </Button>
       </div>
       <p className="text-xs text-muted-foreground mt-1">
         {description}
@@ -142,7 +174,16 @@ export const ApiKeySection = ({
             )}
           </>
         )}
-        <Button onClick={handleSave}>Save API Key</Button>
+        <Button onClick={handleSave} disabled={isSaving}>
+          {isSaving ? (
+            <>
+              <RotateCw className="h-4 w-4 mr-1 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            "Save API Key"
+          )}
+        </Button>
       </div>
     </div>
   );
