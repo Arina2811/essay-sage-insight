@@ -26,8 +26,6 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
     return <>{children}</>;
   }
 
-  console.log("Admin check:", { user, isAdmin });
-
   // Regular user is logged in but not an admin
   if (user && !isAdmin) {
     console.log("User is not an admin, redirecting to settings");
