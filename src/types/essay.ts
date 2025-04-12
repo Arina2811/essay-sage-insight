@@ -36,6 +36,38 @@ export interface EssayAnalysisResult {
       source?: string;
     }>;
   };
+  readability: {
+    score: number;
+    gradeLevel: string;
+    feedback: string;
+    suggestions: string[];
+  };
+  aiDetection: {
+    score: number;
+    isAiGenerated: boolean;
+    confidence: number;
+    feedback: string;
+  };
+  vocabulary: {
+    score: number;
+    feedback: string;
+    advanced: string[];
+    suggestions: string[];
+  };
+  targetAudience: {
+    suitable: string[];
+    unsuitable: string[];
+    feedback: string;
+  };
+  sentiment: {
+    overall: 'positive' | 'neutral' | 'negative';
+    score: number;
+    feedback: string;
+    highlights: {
+      positive: string[];
+      negative: string[];
+    };
+  };
 }
 
 export interface EssayData {
@@ -45,4 +77,3 @@ export interface EssayData {
   analysis?: EssayAnalysisResult;
   created_at?: string;
 }
-

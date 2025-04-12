@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 
 // This key would typically be stored in environment variables or Supabase secrets
@@ -225,7 +226,7 @@ export class GeminiService {
     const feedbackLevel = this.getFeedbackLevel();
     
     return this.generateContent({
-      prompt: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, creativity, and overall effectiveness. Be specific about strengths and areas for improvement.
+      prompt: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, creativity, and overall effectiveness. Also include advanced analysis on readability, AI detection probability, vocabulary assessment, target audience, and sentiment analysis.
       Format your analysis as a JSON object with these fields:
       {
         "overallScore": number from 0-100,
@@ -255,6 +256,38 @@ export class GeminiService {
           "feedback": "detailed feedback on originality and creative thinking",
           "highlights": ["creative element 1", "creative element 2"],
           "suggestions": ["suggestion to improve creativity 1", "suggestion 2", "suggestion 3"]
+        },
+        "readability": {
+          "score": number from 0-100,
+          "gradeLevel": "appropriate reading level (e.g., High School, College, Graduate)",
+          "feedback": "feedback on how accessible the writing is",
+          "suggestions": ["suggestion1", "suggestion2", "suggestion3"]
+        },
+        "aiDetection": {
+          "score": number from 0-100 (higher means more likely human-written),
+          "isAiGenerated": boolean based on your assessment,
+          "confidence": number from 0-100 representing your confidence in the assessment,
+          "feedback": "explanation of AI detection assessment"
+        },
+        "vocabulary": {
+          "score": number from 0-100,
+          "feedback": "assessment of vocabulary usage",
+          "advanced": ["list", "of", "advanced", "terms", "used"],
+          "suggestions": ["vocabulary improvement suggestion 1", "suggestion 2", "suggestion 3"]
+        },
+        "targetAudience": {
+          "suitable": ["audience type 1", "audience type 2"],
+          "unsuitable": ["audience type not well suited for this content"],
+          "feedback": "explanation of audience assessment"
+        },
+        "sentiment": {
+          "overall": "positive", "neutral", or "negative",
+          "score": number from 0-100 (50 being neutral),
+          "feedback": "assessment of essay tone and sentiment",
+          "highlights": {
+            "positive": ["positive element 1", "positive element 2"],
+            "negative": ["negative element 1", "negative element 2"]
+          }
         }
       }
 
@@ -264,6 +297,27 @@ export class GeminiService {
       3. Innovative examples or case studies
       4. Unique frameworks or approaches to the topic
       5. Challenging conventional wisdom or assumptions
+
+      For the readability assessment, consider:
+      1. Sentence length and complexity
+      2. Paragraph structure
+      3. Use of technical jargon
+      4. Flow and transitions
+      5. Overall accessibility to the intended audience
+
+      For the AI detection assessment, look for:
+      1. Unnatural patterns or repetitions
+      2. Lack of personal voice
+      3. Generic examples or ideas
+      4. Perfect grammar but lacking depth
+      5. Inconsistencies in argument or style
+
+      For the vocabulary assessment, evaluate:
+      1. Variety of word choice
+      2. Appropriateness of terminology
+      3. Academic vs. conversational language
+      4. Subject-specific vocabulary
+      5. Precision and specificity of terms
 
       Here's the essay to analyze:
       

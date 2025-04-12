@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
-import { Loader2, FileCheck, AlertTriangle, CheckCircle, Sparkles } from "lucide-react";
+import { Loader2, FileCheck, AlertTriangle, CheckCircle, Sparkles, BookOpen, Robot, Lightbulb, Users, HeartPulse } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EssayAnalysisService } from "@/services/EssayAnalysisService";
@@ -152,11 +153,16 @@ const Analysis = () => {
               </div>
               
               <Tabs defaultValue="feedback">
-                <TabsList className="mb-4">
+                <TabsList className="mb-4 flex flex-wrap">
                   <TabsTrigger value="feedback">Smart Feedback</TabsTrigger>
                   <TabsTrigger value="style">Style</TabsTrigger>
                   <TabsTrigger value="thesis">Thesis</TabsTrigger>
                   <TabsTrigger value="creativity">Creativity</TabsTrigger>
+                  <TabsTrigger value="readability">Readability</TabsTrigger>
+                  <TabsTrigger value="aiDetection">AI Detection</TabsTrigger>
+                  <TabsTrigger value="vocabulary">Vocabulary</TabsTrigger>
+                  <TabsTrigger value="audience">Audience</TabsTrigger>
+                  <TabsTrigger value="sentiment">Sentiment</TabsTrigger>
                   <TabsTrigger value="citations">Citations</TabsTrigger>
                   <TabsTrigger value="plagiarism">Plagiarism</TabsTrigger>
                 </TabsList>
@@ -199,8 +205,11 @@ const Analysis = () => {
                 
                 <TabsContent value="creativity" className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <Sparkles className="h-4 w-4 mr-2 text-amber-500" />
-                    Creative Thinking
+                    <h3 className="font-medium flex items-center">
+                      <Sparkles className="h-4 w-4 mr-2 text-amber-500" />
+                      Creative Thinking
+                    </h3>
+                    <span className="text-sm font-medium">{analysisResult.creativity.score}/100</span>
                   </div>
                   <Progress 
                     value={analysisResult.creativity.score} 
@@ -231,16 +240,204 @@ const Analysis = () => {
                   )}
                 </TabsContent>
                 
+                <TabsContent value="readability" className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-medium flex items-center">
+                      <BookOpen className="h-4 w-4 mr-2 text-blue-500" />
+                      Readability
+                    </h3>
+                    <span className="text-sm font-medium">{analysisResult.readability?.score || 0}/100</span>
+                  </div>
+                  <Progress 
+                    value={analysisResult.readability?.score || 0} 
+                    className="h-2 mb-2"
+                  />
+                  <div className="flex items-center text-sm mb-2">
+                    <span className="text-muted-foreground mr-2">Reading Level:</span>
+                    <span className="font-medium">{analysisResult.readability?.gradeLevel || "Not detected"}</span>
+                  </div>
+                  <p className="text-muted-foreground">{analysisResult.readability?.feedback || "No readability feedback available."}</p>
+                  
+                  {analysisResult.readability?.suggestions && analysisResult.readability.suggestions.length > 0 && (
+                    <>
+                      <h4 className="font-medium text-sm mt-4 mb-2">Readability Suggestions:</h4>
+                      <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                        {analysisResult.readability.suggestions.map((suggestion, index) => (
+                          <li key={index}>{suggestion}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="aiDetection" className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-medium flex items-center">
+                      <Robot className="h-4 w-4 mr-2 text-purple-500" />
+                      AI Detection
+                    </h3>
+                    <span className="text-sm font-medium">{analysisResult.aiDetection?.score || 0}/100</span>
+                  </div>
+                  <Progress 
+                    value={analysisResult.aiDetection?.score || 0} 
+                    className="h-2 mb-2"
+                  />
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-sm text-muted-foreground">Verdict:</span>
+                    {analysisResult.aiDetection?.isAiGenerated ? (
+                      <span className="text-sm font-medium text-red-500">Likely AI-generated</span>
+                    ) : (
+                      <span className="text-sm font-medium text-green-500">Likely human-written</span>
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      ({analysisResult.aiDetection?.confidence || 0}% confidence)
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground">{analysisResult.aiDetection?.feedback || "No AI detection feedback available."}</p>
+                </TabsContent>
+                
+                <TabsContent value="vocabulary" className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-medium flex items-center">
+                      <Lightbulb className="h-4 w-4 mr-2 text-yellow-500" />
+                      Vocabulary Assessment
+                    </h3>
+                    <span className="text-sm font-medium">{analysisResult.vocabulary?.score || 0}/100</span>
+                  </div>
+                  <Progress 
+                    value={analysisResult.vocabulary?.score || 0} 
+                    className="h-2 mb-2"
+                  />
+                  <p className="text-muted-foreground">{analysisResult.vocabulary?.feedback || "No vocabulary feedback available."}</p>
+                  
+                  {analysisResult.vocabulary?.advanced && analysisResult.vocabulary.advanced.length > 0 && (
+                    <>
+                      <h4 className="font-medium text-sm mt-4 mb-2">Advanced Terms Used:</h4>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {analysisResult.vocabulary.advanced.map((term, index) => (
+                          <span key={index} className="px-2 py-1 bg-muted rounded-md text-xs">
+                            {term}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  
+                  {analysisResult.vocabulary?.suggestions && analysisResult.vocabulary.suggestions.length > 0 && (
+                    <>
+                      <h4 className="font-medium text-sm mt-4 mb-2">Vocabulary Improvement Suggestions:</h4>
+                      <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                        {analysisResult.vocabulary.suggestions.map((suggestion, index) => (
+                          <li key={index}>{suggestion}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="audience" className="space-y-4">
+                  <div className="flex items-center mb-4">
+                    <h3 className="font-medium flex items-center">
+                      <Users className="h-4 w-4 mr-2 text-indigo-500" />
+                      Target Audience Analysis
+                    </h3>
+                  </div>
+                  
+                  <p className="text-muted-foreground mb-4">{analysisResult.targetAudience?.feedback || "No audience feedback available."}</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {analysisResult.targetAudience?.suitable && analysisResult.targetAudience.suitable.length > 0 && (
+                      <div className="bg-muted/50 p-4 rounded-md">
+                        <h4 className="font-medium text-sm mb-2 flex items-center">
+                          <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                          Suitable For
+                        </h4>
+                        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                          {analysisResult.targetAudience.suitable.map((audience, index) => (
+                            <li key={index}>{audience}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {analysisResult.targetAudience?.unsuitable && analysisResult.targetAudience.unsuitable.length > 0 && (
+                      <div className="bg-muted/50 p-4 rounded-md">
+                        <h4 className="font-medium text-sm mb-2 flex items-center">
+                          <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" />
+                          Less Suitable For
+                        </h4>
+                        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                          {analysisResult.targetAudience.unsuitable.map((audience, index) => (
+                            <li key={index}>{audience}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="sentiment" className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium flex items-center">
+                      <HeartPulse className="h-4 w-4 mr-2 text-pink-500" />
+                      Sentiment Analysis
+                    </h3>
+                    <div className="flex items-center space-x-2">
+                      <span 
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          analysisResult.sentiment?.overall === 'positive' ? 'bg-green-100 text-green-800' :
+                          analysisResult.sentiment?.overall === 'negative' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {analysisResult.sentiment?.overall || "Neutral"}
+                      </span>
+                      <span className="text-sm font-medium">{analysisResult.sentiment?.score || 50}/100</span>
+                    </div>
+                  </div>
+                  
+                  <Progress 
+                    value={analysisResult.sentiment?.score || 50} 
+                    className="h-2 mb-2"
+                  />
+                  
+                  <p className="text-muted-foreground">{analysisResult.sentiment?.feedback || "No sentiment analysis available."}</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    {analysisResult.sentiment?.highlights?.positive && analysisResult.sentiment.highlights.positive.length > 0 && (
+                      <div className="bg-muted/50 p-4 rounded-md">
+                        <h4 className="font-medium text-sm mb-2 text-green-600">Positive Elements</h4>
+                        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                          {analysisResult.sentiment.highlights.positive.map((highlight, index) => (
+                            <li key={index}>{highlight}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {analysisResult.sentiment?.highlights?.negative && analysisResult.sentiment.highlights.negative.length > 0 && (
+                      <div className="bg-muted/50 p-4 rounded-md">
+                        <h4 className="font-medium text-sm mb-2 text-red-600">Areas for Improvement</h4>
+                        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                          {analysisResult.sentiment.highlights.negative.map((highlight, index) => (
+                            <li key={index}>{highlight}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+                
                 <TabsContent value="citations" className="space-y-4">
                   <div className="flex items-center mb-4">
-                    <h3 className="font-medium flex-1">Citation Check</h3>
+                    <h3 className="font-medium">Citation Check</h3>
                     {analysisResult.citations.isValid ? (
-                      <span className="inline-flex items-center text-green-500">
+                      <span className="inline-flex items-center text-green-500 ml-auto">
                         <CheckCircle className="h-4 w-4 mr-1" />
                         Valid
                       </span>
                     ) : (
-                      <span className="inline-flex items-center text-amber-500">
+                      <span className="inline-flex items-center text-amber-500 ml-auto">
                         <AlertTriangle className="h-4 w-4 mr-1" />
                         Issues Found
                       </span>

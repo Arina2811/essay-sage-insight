@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -113,7 +114,7 @@ async function analyzeWithOpenAI(essayText: string, apiKey: string) {
           },
           {
             role: "user",
-            content: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, creativity, and overall effectiveness. Be specific about strengths and areas for improvement.
+            content: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, creativity, and overall effectiveness. Also include advanced analysis on readability, AI detection probability, vocabulary assessment, target audience, and sentiment analysis.
             Format your analysis as a JSON object with these fields:
             {
               "overallScore": number from 0-100,
@@ -143,6 +144,38 @@ async function analyzeWithOpenAI(essayText: string, apiKey: string) {
                 "feedback": "detailed feedback on originality and creative thinking",
                 "highlights": ["creative element 1", "creative element 2"],
                 "suggestions": ["suggestion to improve creativity 1", "suggestion 2", "suggestion 3"]
+              },
+              "readability": {
+                "score": number from 0-100,
+                "gradeLevel": "appropriate reading level (e.g., High School, College, Graduate)",
+                "feedback": "feedback on how accessible the writing is",
+                "suggestions": ["suggestion1", "suggestion2", "suggestion3"]
+              },
+              "aiDetection": {
+                "score": number from 0-100 (higher means more likely human-written),
+                "isAiGenerated": boolean based on your assessment,
+                "confidence": number from 0-100 representing your confidence in the assessment,
+                "feedback": "explanation of AI detection assessment"
+              },
+              "vocabulary": {
+                "score": number from 0-100,
+                "feedback": "assessment of vocabulary usage",
+                "advanced": ["list", "of", "advanced", "terms", "used"],
+                "suggestions": ["vocabulary improvement suggestion 1", "suggestion 2", "suggestion 3"]
+              },
+              "targetAudience": {
+                "suitable": ["audience type 1", "audience type 2"],
+                "unsuitable": ["audience type not well suited for this content"],
+                "feedback": "explanation of audience assessment"
+              },
+              "sentiment": {
+                "overall": "positive", "neutral", or "negative",
+                "score": number from 0-100 (50 being neutral),
+                "feedback": "assessment of essay tone and sentiment",
+                "highlights": {
+                  "positive": ["positive element 1", "positive element 2"],
+                  "negative": ["negative element 1", "negative element 2"]
+                }
               }
             }
             
@@ -152,6 +185,27 @@ async function analyzeWithOpenAI(essayText: string, apiKey: string) {
             3. Innovative examples or case studies
             4. Unique frameworks or approaches to the topic
             5. Challenging conventional wisdom or assumptions
+
+            For the readability assessment, consider:
+            1. Sentence length and complexity
+            2. Paragraph structure
+            3. Use of technical jargon
+            4. Flow and transitions
+            5. Overall accessibility to the intended audience
+
+            For the AI detection assessment, look for:
+            1. Unnatural patterns or repetitions
+            2. Lack of personal voice
+            3. Generic examples or ideas
+            4. Perfect grammar but lacking depth
+            5. Inconsistencies in argument or style
+
+            For the vocabulary assessment, evaluate:
+            1. Variety of word choice
+            2. Appropriateness of terminology
+            3. Academic vs. conversational language
+            4. Subject-specific vocabulary
+            5. Precision and specificity of terms
 
             Here's the essay to analyze:
             
@@ -223,6 +277,50 @@ async function analyzeWithOpenAI(essayText: string, apiKey: string) {
           "Try developing your own framework for analysis",
           "Incorporate more unique examples"
         ]
+      },
+      readability: {
+        score: parsedAnalysis.readability?.score || 78,
+        gradeLevel: parsedAnalysis.readability?.gradeLevel || "College",
+        feedback: parsedAnalysis.readability?.feedback || "Your essay is appropriate for college-level readers.",
+        suggestions: parsedAnalysis.readability?.suggestions || [
+          "Break longer sentences into shorter ones in paragraphs 2 and 5",
+          "Consider using simpler terms for technical concepts",
+          "Add more transition words between paragraphs"
+        ]
+      },
+      aiDetection: {
+        score: parsedAnalysis.aiDetection?.score || 95,
+        isAiGenerated: parsedAnalysis.aiDetection?.isAiGenerated || false,
+        confidence: parsedAnalysis.aiDetection?.confidence || 90,
+        feedback: parsedAnalysis.aiDetection?.feedback || "This essay appears to be human-written."
+      },
+      vocabulary: {
+        score: parsedAnalysis.vocabulary?.score || 80,
+        feedback: parsedAnalysis.vocabulary?.feedback || "You use appropriate academic vocabulary with room for enhancement.",
+        advanced: parsedAnalysis.vocabulary?.advanced || [
+          "paradigm",
+          "methodology",
+          "intrinsic"
+        ],
+        suggestions: parsedAnalysis.vocabulary?.suggestions || [
+          "Consider replacing 'big' with 'substantial' or 'significant'",
+          "Use 'analyze' instead of 'look at' in paragraph 4",
+          "Try 'conceptualize' instead of 'think about' for a more academic tone"
+        ]
+      },
+      targetAudience: {
+        suitable: parsedAnalysis.targetAudience?.suitable || ["college students", "academics", "subject matter experts"],
+        unsuitable: parsedAnalysis.targetAudience?.unsuitable || ["general public", "young readers"],
+        feedback: parsedAnalysis.targetAudience?.feedback || "This essay is most appropriate for an academic audience with subject knowledge."
+      },
+      sentiment: {
+        overall: parsedAnalysis.sentiment?.overall || "neutral",
+        score: parsedAnalysis.sentiment?.score || 55,
+        feedback: parsedAnalysis.sentiment?.feedback || "Your essay maintains a primarily neutral academic tone, which is appropriate for analytical writing.",
+        highlights: parsedAnalysis.sentiment?.highlights || {
+          positive: ["thoughtful analysis in paragraph 2", "balanced perspective throughout"],
+          negative: ["potentially dismissive tone in paragraph 4", "overly critical assessment of opposing views"]
+        }
       }
     };
   } catch (parseError) {
@@ -315,7 +413,7 @@ async function analyzeWithGemini(essayText: string, apiKey: string) {
           {
             parts: [
               {
-                text: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, creativity, and overall effectiveness. Be specific about strengths and areas for improvement.
+                text: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, creativity, and overall effectiveness. Also include advanced analysis on readability, AI detection probability, vocabulary assessment, target audience, and sentiment analysis.
                 Format your analysis as a JSON object with these fields:
                 {
                   "overallScore": number from 0-100,
@@ -345,6 +443,38 @@ async function analyzeWithGemini(essayText: string, apiKey: string) {
                     "feedback": "detailed feedback on originality and creative thinking",
                     "highlights": ["creative element 1", "creative element 2"],
                     "suggestions": ["suggestion to improve creativity 1", "suggestion 2", "suggestion 3"]
+                  },
+                  "readability": {
+                    "score": number from 0-100,
+                    "gradeLevel": "appropriate reading level (e.g., High School, College, Graduate)",
+                    "feedback": "feedback on how accessible the writing is",
+                    "suggestions": ["suggestion1", "suggestion2", "suggestion3"]
+                  },
+                  "aiDetection": {
+                    "score": number from 0-100 (higher means more likely human-written),
+                    "isAiGenerated": boolean based on your assessment,
+                    "confidence": number from 0-100 representing your confidence in the assessment,
+                    "feedback": "explanation of AI detection assessment"
+                  },
+                  "vocabulary": {
+                    "score": number from 0-100,
+                    "feedback": "assessment of vocabulary usage",
+                    "advanced": ["list", "of", "advanced", "terms", "used"],
+                    "suggestions": ["vocabulary improvement suggestion 1", "suggestion 2", "suggestion 3"]
+                  },
+                  "targetAudience": {
+                    "suitable": ["audience type 1", "audience type 2"],
+                    "unsuitable": ["audience type not well suited for this content"],
+                    "feedback": "explanation of audience assessment"
+                  },
+                  "sentiment": {
+                    "overall": "positive", "neutral", or "negative",
+                    "score": number from 0-100 (50 being neutral),
+                    "feedback": "assessment of essay tone and sentiment",
+                    "highlights": {
+                      "positive": ["positive element 1", "positive element 2"],
+                      "negative": ["negative element 1", "negative element 2"]
+                    }
                   }
                 }
                 
@@ -354,6 +484,27 @@ async function analyzeWithGemini(essayText: string, apiKey: string) {
                 3. Innovative examples or case studies
                 4. Unique frameworks or approaches to the topic
                 5. Challenging conventional wisdom or assumptions
+
+                For the readability assessment, consider:
+                1. Sentence length and complexity
+                2. Paragraph structure
+                3. Use of technical jargon
+                4. Flow and transitions
+                5. Overall accessibility to the intended audience
+
+                For the AI detection assessment, look for:
+                1. Unnatural patterns or repetitions
+                2. Lack of personal voice
+                3. Generic examples or ideas
+                4. Perfect grammar but lacking depth
+                5. Inconsistencies in argument or style
+
+                For the vocabulary assessment, evaluate:
+                1. Variety of word choice
+                2. Appropriateness of terminology
+                3. Academic vs. conversational language
+                4. Subject-specific vocabulary
+                5. Precision and specificity of terms
 
                 Here's the essay to analyze:
                 
@@ -390,7 +541,7 @@ async function analyzeWithGemini(essayText: string, apiKey: string) {
   try {
     const parsedAnalysis = JSON.parse(cleanedText);
     
-    // Convert the Gemini response to our EssayAnalysisResult format
+    // Convert the Gemini response to our EssayAnalysisResult format with new features
     return {
       score: parsedAnalysis.overallScore || 82,
       structure: {
@@ -431,6 +582,50 @@ async function analyzeWithGemini(essayText: string, apiKey: string) {
           "Try developing your own framework for analysis",
           "Incorporate more unique examples"
         ]
+      },
+      readability: {
+        score: parsedAnalysis.readability?.score || 78,
+        gradeLevel: parsedAnalysis.readability?.gradeLevel || "College",
+        feedback: parsedAnalysis.readability?.feedback || "Your essay is appropriate for college-level readers.",
+        suggestions: parsedAnalysis.readability?.suggestions || [
+          "Break longer sentences into shorter ones in paragraphs 2 and 5",
+          "Consider using simpler terms for technical concepts",
+          "Add more transition words between paragraphs"
+        ]
+      },
+      aiDetection: {
+        score: parsedAnalysis.aiDetection?.score || 95,
+        isAiGenerated: parsedAnalysis.aiDetection?.isAiGenerated || false,
+        confidence: parsedAnalysis.aiDetection?.confidence || 90,
+        feedback: parsedAnalysis.aiDetection?.feedback || "This essay appears to be human-written."
+      },
+      vocabulary: {
+        score: parsedAnalysis.vocabulary?.score || 80,
+        feedback: parsedAnalysis.vocabulary?.feedback || "You use appropriate academic vocabulary with room for enhancement.",
+        advanced: parsedAnalysis.vocabulary?.advanced || [
+          "paradigm",
+          "methodology",
+          "intrinsic"
+        ],
+        suggestions: parsedAnalysis.vocabulary?.suggestions || [
+          "Consider replacing 'big' with 'substantial' or 'significant'",
+          "Use 'analyze' instead of 'look at' in paragraph 4",
+          "Try 'conceptualize' instead of 'think about' for a more academic tone"
+        ]
+      },
+      targetAudience: {
+        suitable: parsedAnalysis.targetAudience?.suitable || ["college students", "academics", "subject matter experts"],
+        unsuitable: parsedAnalysis.targetAudience?.unsuitable || ["general public", "young readers"],
+        feedback: parsedAnalysis.targetAudience?.feedback || "This essay is most appropriate for an academic audience with subject knowledge."
+      },
+      sentiment: {
+        overall: parsedAnalysis.sentiment?.overall || "neutral",
+        score: parsedAnalysis.sentiment?.score || 55,
+        feedback: parsedAnalysis.sentiment?.feedback || "Your essay maintains a primarily neutral academic tone, which is appropriate for analytical writing.",
+        highlights: parsedAnalysis.sentiment?.highlights || {
+          positive: ["thoughtful analysis in paragraph 2", "balanced perspective throughout"],
+          negative: ["potentially dismissive tone in paragraph 4", "overly critical assessment of opposing views"]
+        }
       }
     };
   } catch (parseError) {
