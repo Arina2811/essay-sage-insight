@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
-import { Loader2, FileCheck, AlertTriangle, CheckCircle, Sparkles, BookOpen, Robot, Lightbulb, Users, HeartPulse } from "lucide-react";
+import { Loader2, FileCheck, AlertTriangle, CheckCircle, Sparkles, BookOpen, Bot, Lightbulb, Users, HeartPulse } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EssayAnalysisService } from "@/services/EssayAnalysisService";
@@ -273,7 +272,7 @@ const Analysis = () => {
                 <TabsContent value="aiDetection" className="space-y-4">
                   <div className="flex justify-between items-center">
                     <h3 className="font-medium flex items-center">
-                      <Robot className="h-4 w-4 mr-2 text-purple-500" />
+                      <Bot className="h-4 w-4 mr-2 text-purple-500" />
                       AI Detection
                     </h3>
                     <span className="text-sm font-medium">{analysisResult.aiDetection?.score || 0}/100</span>
