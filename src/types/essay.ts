@@ -22,6 +22,12 @@ export interface EssayAnalysisResult {
     isValid: boolean;
     feedback: string;
   };
+  creativity: {
+    score: number;
+    feedback: string;
+    highlights: string[];
+    suggestions: string[];
+  };
   plagiarism: {
     score: number;
     passages: Array<{
@@ -39,3 +45,4 @@ export interface EssayData {
   analysis?: EssayAnalysisResult;
   created_at?: string;
 }
+

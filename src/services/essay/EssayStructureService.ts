@@ -64,6 +64,12 @@ export class EssayStructureService {
         isValid: true,
         feedback: ""
       },
+      creativity: {
+        score: 75,
+        feedback: "",
+        highlights: [] as string[],
+        suggestions: [] as string[]
+      },
       plagiarism: plagiarism
     };
     
@@ -82,6 +88,15 @@ export class EssayStructureService {
         feedback.thesis.score = 85;
         feedback.thesis.feedback = "Your thesis is clear and effectively presents your main argument.";
         feedback.citations.feedback = "Your citations follow the APA format correctly.";
+        feedback.creativity.score = 80;
+        feedback.creativity.feedback = "Your essay shows good creative thinking and original perspectives.";
+        feedback.creativity.highlights = [
+          "Interesting connection between historical events and modern applications",
+          "Creative use of examples to illustrate your points"
+        ];
+        feedback.creativity.suggestions = [
+          "Consider exploring more unconventional perspectives on this topic"
+        ];
         break;
         
       case 'moderate':
@@ -99,6 +114,17 @@ export class EssayStructureService {
         feedback.thesis.score = 78;
         feedback.thesis.feedback = "Your thesis effectively presents a nuanced argument with both positive and negative aspects. Consider adding more specificity about which technologies you'll focus on to narrow your scope.";
         feedback.citations.feedback = "Citations follow APA format correctly. Consider adding one or two more recent sources (past 2 years) to strengthen your contemporary evidence.";
+        feedback.creativity.score = 75;
+        feedback.creativity.feedback = "Your essay shows some creative thinking, with a few original insights mixed with conventional analysis.";
+        feedback.creativity.highlights = [
+          "Interesting perspective in the third paragraph",
+          "Novel interpretation of the central problem"
+        ];
+        feedback.creativity.suggestions = [
+          "Consider exploring more unconventional connections between your key points",
+          "Try developing your own framework for analyzing this topic",
+          "Incorporate more unique examples rather than commonly cited ones"
+        ];
         break;
         
       case 'strict':
@@ -119,6 +145,18 @@ export class EssayStructureService {
         feedback.thesis.score = 72;
         feedback.thesis.feedback = "Your thesis statement lacks clarity and specificity. It makes an overly broad claim without indicating your specific argument or approach. Revise to clearly state your position and outline the key points you will address.";
         feedback.citations.feedback = "While your citations follow APA format, they have several issues: 1) You rely too heavily on older sources, 2) Several key claims lack citations altogether, 3) You need more peer-reviewed journal articles rather than websites, 4) Add page numbers for all direct quotations.";
+        feedback.creativity.score = 68;
+        feedback.creativity.feedback = "Your essay lacks originality in its approach and perspectives. It largely follows conventional wisdom without contributing new insights.";
+        feedback.creativity.highlights = [
+          "The opening paragraph shows some creative potential"
+        ];
+        feedback.creativity.suggestions = [
+          "Challenge the standard interpretations more directly",
+          "Develop your own unique framework rather than relying on established models",
+          "Incorporate unexpected or contradictory examples to stimulate new thinking",
+          "Consider interdisciplinary connections that aren't typically made in this field",
+          "Present a more provocative thesis that challenges conventional assumptions"
+        ];
         break;
     }
     

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
-import { Loader2, FileCheck, AlertTriangle, CheckCircle } from "lucide-react";
+import { Loader2, FileCheck, AlertTriangle, CheckCircle, Sparkles } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EssayAnalysisService } from "@/services/EssayAnalysisService";
@@ -46,7 +45,6 @@ const Analysis = () => {
     setAnalysisResult(null);
     
     try {
-      // Simulate progress updates
       const progressInterval = setInterval(() => {
         setAnalysisProgress(prev => {
           const newProgress = prev + Math.random() * 15;
@@ -54,14 +52,12 @@ const Analysis = () => {
         });
       }, 300);
 
-      // Call analysis service
       const result = await EssayAnalysisService.analyzeEssay(essay);
       
       clearInterval(progressInterval);
       setAnalysisProgress(100);
       setAnalysisResult(result);
       
-      // Save the essay and its analysis
       const savedResult = await EssayAnalysisService.saveEssay({
         title: essayTitle,
         content: essay,
@@ -144,7 +140,6 @@ const Analysis = () => {
           </div>
         </Card>
 
-        {/* Analysis Results */}
         {analysisResult && (
           <div className="space-y-6">
             <Card className="p-6 glass">
@@ -161,6 +156,7 @@ const Analysis = () => {
                   <TabsTrigger value="feedback">Smart Feedback</TabsTrigger>
                   <TabsTrigger value="style">Style</TabsTrigger>
                   <TabsTrigger value="thesis">Thesis</TabsTrigger>
+                  <TabsTrigger value="creativity">Creativity</TabsTrigger>
                   <TabsTrigger value="citations">Citations</TabsTrigger>
                   <TabsTrigger value="plagiarism">Plagiarism</TabsTrigger>
                 </TabsList>
@@ -199,6 +195,40 @@ const Analysis = () => {
                     "{analysisResult.thesis.text}"
                   </div>
                   <p className="text-muted-foreground">{analysisResult.thesis.feedback}</p>
+                </TabsContent>
+                
+                <TabsContent value="creativity" className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <Sparkles className="h-4 w-4 mr-2 text-amber-500" />
+                    Creative Thinking
+                  </div>
+                  <Progress 
+                    value={analysisResult.creativity.score} 
+                    className="h-2 mb-2"
+                  />
+                  <p className="text-muted-foreground">{analysisResult.creativity.feedback}</p>
+                  
+                  {analysisResult.creativity.highlights.length > 0 && (
+                    <>
+                      <h4 className="font-medium text-sm mt-4 mb-2">Creative Highlights:</h4>
+                      <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                        {analysisResult.creativity.highlights.map((highlight, index) => (
+                          <li key={index}>{highlight}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                  
+                  {analysisResult.creativity.suggestions.length > 0 && (
+                    <>
+                      <h4 className="font-medium text-sm mt-4 mb-2">Suggestions to Boost Creativity:</h4>
+                      <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                        {analysisResult.creativity.suggestions.map((suggestion, index) => (
+                          <li key={index}>{suggestion}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
                 </TabsContent>
                 
                 <TabsContent value="citations" className="space-y-4">

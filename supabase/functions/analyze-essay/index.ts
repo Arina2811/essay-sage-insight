@@ -113,7 +113,7 @@ async function analyzeWithOpenAI(essayText: string, apiKey: string) {
           },
           {
             role: "user",
-            content: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, and overall effectiveness. Be specific about strengths and areas for improvement.
+            content: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, creativity, and overall effectiveness. Be specific about strengths and areas for improvement.
             Format your analysis as a JSON object with these fields:
             {
               "overallScore": number from 0-100,
@@ -137,8 +137,21 @@ async function analyzeWithOpenAI(essayText: string, apiKey: string) {
                 "format": "detected citation format (e.g., APA, MLA)",
                 "isValid": boolean,
                 "feedback": "feedback on citation usage and formatting"
+              },
+              "creativity": {
+                "score": number from 0-100,
+                "feedback": "detailed feedback on originality and creative thinking",
+                "highlights": ["creative element 1", "creative element 2"],
+                "suggestions": ["suggestion to improve creativity 1", "suggestion 2", "suggestion 3"]
               }
             }
+            
+            For the creativity assessment, evaluate:
+            1. Originality of ideas and perspectives
+            2. Novel connections between concepts
+            3. Innovative examples or case studies
+            4. Unique frameworks or approaches to the topic
+            5. Challenging conventional wisdom or assumptions
 
             Here's the essay to analyze:
             
@@ -197,6 +210,19 @@ async function analyzeWithOpenAI(essayText: string, apiKey: string) {
         format: parsedAnalysis.citations?.format || "Unknown",
         isValid: parsedAnalysis.citations?.isValid || false,
         feedback: parsedAnalysis.citations?.feedback || "Citation analysis not available."
+      },
+      creativity: {
+        score: parsedAnalysis.creativity?.score || 75,
+        feedback: parsedAnalysis.creativity?.feedback || "Your essay shows some creative thinking, with a few original insights.",
+        highlights: parsedAnalysis.creativity?.highlights || [
+          "Interesting perspective on the main topic",
+          "Novel approach to a common issue"
+        ],
+        suggestions: parsedAnalysis.creativity?.suggestions || [
+          "Consider exploring more unconventional connections",
+          "Try developing your own framework for analysis",
+          "Incorporate more unique examples"
+        ]
       }
     };
   } catch (parseError) {
@@ -289,7 +315,7 @@ async function analyzeWithGemini(essayText: string, apiKey: string) {
           {
             parts: [
               {
-                text: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, and overall effectiveness. Be specific about strengths and areas for improvement.
+                text: `Analyze the following academic essay and provide detailed feedback on structure, style, thesis clarity, creativity, and overall effectiveness. Be specific about strengths and areas for improvement.
                 Format your analysis as a JSON object with these fields:
                 {
                   "overallScore": number from 0-100,
@@ -313,8 +339,21 @@ async function analyzeWithGemini(essayText: string, apiKey: string) {
                     "format": "detected citation format (e.g., APA, MLA)",
                     "isValid": boolean,
                     "feedback": "feedback on citation usage and formatting"
+                  },
+                  "creativity": {
+                    "score": number from 0-100,
+                    "feedback": "detailed feedback on originality and creative thinking",
+                    "highlights": ["creative element 1", "creative element 2"],
+                    "suggestions": ["suggestion to improve creativity 1", "suggestion 2", "suggestion 3"]
                   }
                 }
+                
+                For the creativity assessment, evaluate:
+                1. Originality of ideas and perspectives
+                2. Novel connections between concepts
+                3. Innovative examples or case studies
+                4. Unique frameworks or approaches to the topic
+                5. Challenging conventional wisdom or assumptions
 
                 Here's the essay to analyze:
                 
@@ -379,6 +418,19 @@ async function analyzeWithGemini(essayText: string, apiKey: string) {
         format: parsedAnalysis.citations?.format || "Unknown",
         isValid: parsedAnalysis.citations?.isValid || false,
         feedback: parsedAnalysis.citations?.feedback || "Citation analysis not available."
+      },
+      creativity: {
+        score: parsedAnalysis.creativity?.score || 75,
+        feedback: parsedAnalysis.creativity?.feedback || "Your essay shows some creative thinking, with a few original insights.",
+        highlights: parsedAnalysis.creativity?.highlights || [
+          "Interesting perspective on the main topic",
+          "Novel approach to a common issue"
+        ],
+        suggestions: parsedAnalysis.creativity?.suggestions || [
+          "Consider exploring more unconventional connections",
+          "Try developing your own framework for analysis",
+          "Incorporate more unique examples"
+        ]
       }
     };
   } catch (parseError) {

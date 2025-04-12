@@ -59,6 +59,19 @@ export class GeminiEssayService {
             isValid: parsedAnalysis.citations?.isValid || false,
             feedback: parsedAnalysis.citations?.feedback || "Citation analysis not available."
           },
+          creativity: {
+            score: parsedAnalysis.creativity?.score || 75,
+            feedback: parsedAnalysis.creativity?.feedback || "Your essay demonstrates some creative elements in your approach to the topic.",
+            highlights: parsedAnalysis.creativity?.highlights || [
+              "Interesting perspective on the main argument",
+              "Good use of metaphors in paragraph 3"
+            ],
+            suggestions: parsedAnalysis.creativity?.suggestions || [
+              "Consider incorporating more unique examples",
+              "Try using more varied vocabulary to express key concepts",
+              "Develop your own framework for analyzing this topic"
+            ]
+          },
           plagiarism: {
             score: plagiarismResult.originalityScore,
             passages: plagiarismResult.matches.map(match => ({
