@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { GeminiService } from "./GeminiService";
 import { PlagiarismService } from "./PlagiarismService";
@@ -95,7 +96,7 @@ export class EssayAnalysisService {
     }
   }
 
-  static async checkPlagiarism(essayText: string, language?: string): Promise<{
+  static async checkPlagiarism(essayText: string): Promise<{
     originalityScore: number;
     matches: Array<{
       text: string;
@@ -104,7 +105,7 @@ export class EssayAnalysisService {
     }>;
   }> {
     try {
-      const result = await PlagiarismService.checkPlagiarism(essayText, language);
+      const result = await PlagiarismService.checkPlagiarism(essayText);
       
       return {
         originalityScore: result.originalityScore,

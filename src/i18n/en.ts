@@ -37,7 +37,7 @@ export const en = {
     vocabulary: "Vocabulary",
     audience: "Audience",
     sentiment: "Sentiment",
-    citations: "Citations",
+    citationCheck: "Citation Check",
     plagiarism: "Plagiarism",
     structure: "Essay Structure",
     writingStyle: "Writing Style",
@@ -59,7 +59,7 @@ export const en = {
     sentimentAnalysis: "Sentiment Analysis",
     positiveElements: "Positive Elements",
     areasForImprovement: "Areas for Improvement",
-    citationCheck: "Citation Check",
+    citationsCheck: "Citation Check",
     valid: "Valid",
     issuesFound: "Issues Found",
     format: "Format:",
@@ -70,6 +70,6 @@ export const en = {
     match: "match",
     noMatches: "No significant matches found. Your essay appears to be original!",
     viewHistory: "View History",
-    goToDashboard: "Go to Dashboard",
+    goToDashboard: "Go to Dashboard"
   }
 };
