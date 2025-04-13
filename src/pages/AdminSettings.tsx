@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { GeminiService } from "@/services/GeminiService";
-import { ShieldAlert, ArrowLeft, Info } from "lucide-react";
+import { ShieldAlert, ArrowLeft, Info, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { ApiKeysCard } from "@/components/admin/ApiKeysCard";
@@ -11,7 +11,7 @@ import { AIModelsConfig } from "@/components/admin/AIModelsConfig";
 import { toast } from "sonner";
 
 const AdminSettings = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
 
   // During initial load, check for the OpenAI API key
   useEffect(() => {
@@ -47,11 +47,18 @@ const AdminSettings = () => {
   return (
     <div className="container mx-auto section-padding">
       <div className="max-w-3xl mx-auto space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Admin Settings</h1>
+        <div className="flex flex-col items-center text-center">
+          <div className="flex items-center mb-2">
+            <Lock className="h-5 w-5 mr-2 text-amber-500" />
+            <h1 className="text-3xl font-bold tracking-tight">Admin Settings</h1>
+          </div>
           <p className="text-muted-foreground mt-2">
-            Configure API keys and AI models for your application
+            Secure configuration for API keys and AI models
           </p>
+          <div className="mt-4 flex items-center bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 text-sm px-3 py-1 rounded-full">
+            <ShieldAlert className="h-4 w-4 mr-1" />
+            <span>Logged in as admin: {user?.email}</span>
+          </div>
           <div className="mt-4">
             <Link to="/settings">
               <Button variant="outline" className="gap-2">

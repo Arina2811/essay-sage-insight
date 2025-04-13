@@ -1,7 +1,10 @@
 
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShieldAlert } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -20,10 +23,30 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
     );
   }
 
-  // If bypass is enabled and we're in development, allow access regardless
+  // If bypass is enabled and we're in development, show a secure confirmation
   if (bypassAuth && process.env.NODE_ENV === 'development') {
-    console.log("Auth bypassed for development environment");
-    return <>{children}</>;
+    return (
+      <div className="container mx-auto section-padding">
+        <div className="max-w-3xl mx-auto space-y-8">
+          <Card className="p-8 glass text-center">
+            <ShieldAlert className="h-16 w-16 mx-auto text-amber-500 mb-4" />
+            <h1 className="text-2xl font-bold mb-4">Admin Security Check</h1>
+            <p className="mb-6">
+              You are accessing an admin area with auth bypass enabled. 
+              This area contains sensitive API configurations.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link to="/settings">
+                <Button variant="outline">Return to Settings</Button>
+              </Link>
+              <Button onClick={() => window.history.replaceState(null, '', location.pathname)}>
+                Continue to Admin Panel
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   // Regular user is logged in but not an admin
