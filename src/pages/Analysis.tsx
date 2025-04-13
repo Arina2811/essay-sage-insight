@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EssayAnalysisService } from "@/services/EssayAnalysisService";
 import { EssayAnalysisResult } from "@/types/essay";
 import { useNavigate } from "react-router-dom";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 const Analysis = () => {
   const [essay, setEssay] = useState("");
@@ -21,13 +20,12 @@ const Analysis = () => {
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const { toast: uiToast } = useToast();
   const navigate = useNavigate();
-  const { t } = useLanguage();
 
   const handleAnalysis = async () => {
     if (!essay.trim()) {
       uiToast({
-        title: t("analysis.essayRequired"),
-        description: t("analysis.essayRequiredMessage"),
+        title: "Essay Required",
+        description: "Please enter your essay text to analyze.",
         variant: "destructive",
       });
       return;
@@ -35,8 +33,8 @@ const Analysis = () => {
 
     if (!essayTitle.trim()) {
       uiToast({
-        title: t("analysis.titleRequired"),
-        description: t("analysis.titleRequiredMessage"),
+        title: "Title Required",
+        description: "Please provide a title for your essay.",
         variant: "destructive",
       });
       return;
@@ -66,18 +64,18 @@ const Analysis = () => {
         analysis: result
       });
 
-      toast.success(t("analysis.analysisComplete"), {
-        description: t("analysis.analysisCompleteMessage"),
+      toast.success("Essay analysis complete!", {
+        description: "Your essay has been analyzed and saved to your library.",
         action: {
-          label: t("common.viewDashboard"),
+          label: "View Dashboard",
           onClick: () => navigate('/dashboard')
         }
       });
     } catch (error) {
       console.error("Analysis error:", error);
       uiToast({
-        title: t("analysis.analysisFailed"),
-        description: t("analysis.analysisFailedMessage"),
+        title: "Analysis Failed",
+        description: "There was an error analyzing your essay. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -89,27 +87,27 @@ const Analysis = () => {
     <div className="container mx-auto section-padding">
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight">{t("analysis.title")}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Essay Analysis</h1>
           <p className="text-muted-foreground">
-            {t("analysis.subtitle")}
+            Submit your essay below for instant AI-powered analysis and feedback
           </p>
         </div>
 
         <Card className="p-6 glass">
           <div className="mb-4">
             <label htmlFor="essay-title" className="block text-sm font-medium mb-1">
-              {t("analysis.essayTitle")}
+              Essay Title
             </label>
             <Input
               id="essay-title"
-              placeholder={t("analysis.essayTitlePlaceholder")}
+              placeholder="Enter essay title..."
               value={essayTitle}
               onChange={(e) => setEssayTitle(e.target.value)}
               className="mb-4"
             />
           </div>
           <Textarea
-            placeholder={t("analysis.essayPlaceholder")}
+            placeholder="Paste or type your essay here..."
             value={essay}
             onChange={(e) => setEssay(e.target.value)}
             className="min-h-[300px] mb-4"
@@ -117,7 +115,7 @@ const Analysis = () => {
           {isAnalyzing && (
             <div className="mb-4">
               <div className="flex justify-between text-sm mb-1">
-                <span>{t("common.analyzing")}</span>
+                <span>Analyzing...</span>
                 <span>{Math.round(analysisProgress)}%</span>
               </div>
               <Progress value={analysisProgress} className="h-2" />
@@ -133,10 +131,10 @@ const Analysis = () => {
               {isAnalyzing ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t("common.analyzing")}
+                  Analyzing...
                 </>
               ) : (
-                t("analysis.analyzeButton")
+                "Analyze Essay"
               )}
             </Button>
           </div>
@@ -146,31 +144,31 @@ const Analysis = () => {
           <div className="space-y-6">
             <Card className="p-6 glass">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">{t("results.analysisResults")}</h2>
+                <h2 className="text-xl font-semibold">Analysis Results</h2>
                 <div className="flex items-center">
                   <span className="text-2xl font-bold mr-2">{analysisResult.score}/100</span>
-                  <span className="text-sm text-muted-foreground">{t("results.overallScore")}</span>
+                  <span className="text-sm text-muted-foreground">Overall Score</span>
                 </div>
               </div>
               
               <Tabs defaultValue="feedback">
                 <TabsList className="mb-4 flex flex-wrap">
-                  <TabsTrigger value="feedback">{t("results.smartFeedback")}</TabsTrigger>
-                  <TabsTrigger value="style">{t("results.style")}</TabsTrigger>
-                  <TabsTrigger value="thesis">{t("results.thesis")}</TabsTrigger>
-                  <TabsTrigger value="creativity">{t("results.creativity")}</TabsTrigger>
-                  <TabsTrigger value="readability">{t("results.readability")}</TabsTrigger>
-                  <TabsTrigger value="aiDetection">{t("results.aiDetection")}</TabsTrigger>
-                  <TabsTrigger value="vocabulary">{t("results.vocabulary")}</TabsTrigger>
-                  <TabsTrigger value="audience">{t("results.audience")}</TabsTrigger>
-                  <TabsTrigger value="sentiment">{t("results.sentiment")}</TabsTrigger>
-                  <TabsTrigger value="citations">{t("results.citations")}</TabsTrigger>
-                  <TabsTrigger value="plagiarism">{t("results.plagiarism")}</TabsTrigger>
+                  <TabsTrigger value="feedback">Smart Feedback</TabsTrigger>
+                  <TabsTrigger value="style">Style</TabsTrigger>
+                  <TabsTrigger value="thesis">Thesis</TabsTrigger>
+                  <TabsTrigger value="creativity">Creativity</TabsTrigger>
+                  <TabsTrigger value="readability">Readability</TabsTrigger>
+                  <TabsTrigger value="aiDetection">AI Detection</TabsTrigger>
+                  <TabsTrigger value="vocabulary">Vocabulary</TabsTrigger>
+                  <TabsTrigger value="audience">Audience</TabsTrigger>
+                  <TabsTrigger value="sentiment">Sentiment</TabsTrigger>
+                  <TabsTrigger value="citations">Citations</TabsTrigger>
+                  <TabsTrigger value="plagiarism">Plagiarism</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="feedback" className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="font-medium">{t("results.structure")}</h3>
+                    <h3 className="font-medium">Essay Structure</h3>
                     <span className="text-sm font-medium">{analysisResult.structure.score}/100</span>
                   </div>
                   <Progress value={analysisResult.structure.score} className="h-2 mb-2" />
@@ -179,12 +177,12 @@ const Analysis = () => {
                 
                 <TabsContent value="style" className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="font-medium">{t("results.writingStyle")}</h3>
+                    <h3 className="font-medium">Writing Style</h3>
                     <span className="text-sm font-medium">{analysisResult.style.score}/100</span>
                   </div>
                   <Progress value={analysisResult.style.score} className="h-2 mb-2" />
                   <p className="text-muted-foreground">{analysisResult.style.feedback}</p>
-                  <h4 className="font-medium text-sm mt-4 mb-2">{t("results.suggestions")}</h4>
+                  <h4 className="font-medium text-sm mt-4 mb-2">Suggestions:</h4>
                   <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                     {analysisResult.style.suggestions.map((suggestion, index) => (
                       <li key={index}>{suggestion}</li>
@@ -194,7 +192,7 @@ const Analysis = () => {
                 
                 <TabsContent value="thesis" className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="font-medium">{t("results.thesisStatement")}</h3>
+                    <h3 className="font-medium">Thesis Statement</h3>
                     <span className="text-sm font-medium">{analysisResult.thesis.score}/100</span>
                   </div>
                   <Progress value={analysisResult.thesis.score} className="h-2 mb-2" />
@@ -208,7 +206,7 @@ const Analysis = () => {
                   <div className="flex justify-between items-center">
                     <h3 className="font-medium flex items-center">
                       <Sparkles className="h-4 w-4 mr-2 text-amber-500" />
-                      {t("results.creativity")}
+                      Creativity
                     </h3>
                     <span className="text-sm font-medium">{analysisResult.creativity.score}/100</span>
                   </div>
@@ -220,7 +218,7 @@ const Analysis = () => {
                   
                   {analysisResult.creativity.highlights.length > 0 && (
                     <>
-                      <h4 className="font-medium text-sm mt-4 mb-2">{t("results.creativeHighlights")}</h4>
+                      <h4 className="font-medium text-sm mt-4 mb-2">Creative Highlights:</h4>
                       <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                         {analysisResult.creativity.highlights.map((highlight, index) => (
                           <li key={index}>{highlight}</li>
@@ -231,7 +229,7 @@ const Analysis = () => {
                   
                   {analysisResult.creativity.suggestions.length > 0 && (
                     <>
-                      <h4 className="font-medium text-sm mt-4 mb-2">{t("results.suggestionsToBoost")}</h4>
+                      <h4 className="font-medium text-sm mt-4 mb-2">Suggestions to Boost Creativity:</h4>
                       <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                         {analysisResult.creativity.suggestions.map((suggestion, index) => (
                           <li key={index}>{suggestion}</li>
@@ -245,7 +243,7 @@ const Analysis = () => {
                   <div className="flex justify-between items-center">
                     <h3 className="font-medium flex items-center">
                       <BookOpen className="h-4 w-4 mr-2 text-blue-500" />
-                      {t("results.readability")}
+                      Readability
                     </h3>
                     <span className="text-sm font-medium">{analysisResult.readability?.score || 0}/100</span>
                   </div>
@@ -254,14 +252,14 @@ const Analysis = () => {
                     className="h-2 mb-2"
                   />
                   <div className="flex items-center text-sm mb-2">
-                    <span className="text-muted-foreground mr-2">{t("results.readingLevel")}</span>
+                    <span className="text-muted-foreground mr-2">Reading Level:</span>
                     <span className="font-medium">{analysisResult.readability?.gradeLevel || "Not detected"}</span>
                   </div>
                   <p className="text-muted-foreground">{analysisResult.readability?.feedback || "No readability feedback available."}</p>
                   
                   {analysisResult.readability?.suggestions && analysisResult.readability.suggestions.length > 0 && (
                     <>
-                      <h4 className="font-medium text-sm mt-4 mb-2">{t("results.readabilitySuggestions")}</h4>
+                      <h4 className="font-medium text-sm mt-4 mb-2">Readability Suggestions:</h4>
                       <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                         {analysisResult.readability.suggestions.map((suggestion, index) => (
                           <li key={index}>{suggestion}</li>
@@ -275,7 +273,7 @@ const Analysis = () => {
                   <div className="flex justify-between items-center">
                     <h3 className="font-medium flex items-center">
                       <Bot className="h-4 w-4 mr-2 text-purple-500" />
-                      {t("results.aiDetection")}
+                      AI Detection
                     </h3>
                     <span className="text-sm font-medium">{analysisResult.aiDetection?.score || 0}/100</span>
                   </div>
@@ -301,7 +299,7 @@ const Analysis = () => {
                   <div className="flex justify-between items-center">
                     <h3 className="font-medium flex items-center">
                       <Lightbulb className="h-4 w-4 mr-2 text-yellow-500" />
-                      {t("results.vocabulary")}
+                      Vocabulary
                     </h3>
                     <span className="text-sm font-medium">{analysisResult.vocabulary?.score || 0}/100</span>
                   </div>
@@ -313,7 +311,7 @@ const Analysis = () => {
                   
                   {analysisResult.vocabulary?.advanced && analysisResult.vocabulary.advanced.length > 0 && (
                     <>
-                      <h4 className="font-medium text-sm mt-4 mb-2">{t("results.advancedTermsUsed")}</h4>
+                      <h4 className="font-medium text-sm mt-4 mb-2">Advanced Terms Used:</h4>
                       <div className="flex flex-wrap gap-2 mb-4">
                         {analysisResult.vocabulary.advanced.map((term, index) => (
                           <span key={index} className="px-2 py-1 bg-muted rounded-md text-xs">
@@ -326,7 +324,7 @@ const Analysis = () => {
                   
                   {analysisResult.vocabulary?.suggestions && analysisResult.vocabulary.suggestions.length > 0 && (
                     <>
-                      <h4 className="font-medium text-sm mt-4 mb-2">{t("results.vocabularyImprovementSuggestions")}</h4>
+                      <h4 className="font-medium text-sm mt-4 mb-2">Vocabulary Improvement Suggestions:</h4>
                       <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                         {analysisResult.vocabulary.suggestions.map((suggestion, index) => (
                           <li key={index}>{suggestion}</li>
@@ -340,7 +338,7 @@ const Analysis = () => {
                   <div className="flex items-center mb-4">
                     <h3 className="font-medium flex items-center">
                       <Users className="h-4 w-4 mr-2 text-indigo-500" />
-                      {t("results.targetAudienceAnalysis")}
+                      Target Audience Analysis
                     </h3>
                   </div>
                   
@@ -351,7 +349,7 @@ const Analysis = () => {
                       <div className="bg-muted/50 p-4 rounded-md">
                         <h4 className="font-medium text-sm mb-2 flex items-center">
                           <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                          {t("results.suitableFor")}
+                          Suitable For
                         </h4>
                         <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                           {analysisResult.targetAudience.suitable.map((audience, index) => (
@@ -365,7 +363,7 @@ const Analysis = () => {
                       <div className="bg-muted/50 p-4 rounded-md">
                         <h4 className="font-medium text-sm mb-2 flex items-center">
                           <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" />
-                          {t("results.lessSuitableFor")}
+                          Less Suitable For
                         </h4>
                         <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                           {analysisResult.targetAudience.unsuitable.map((audience, index) => (
@@ -381,7 +379,7 @@ const Analysis = () => {
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium flex items-center">
                       <HeartPulse className="h-4 w-4 mr-2 text-pink-500" />
-                      {t("results.sentimentAnalysis")}
+                      Sentiment Analysis
                     </h3>
                     <div className="flex items-center space-x-2">
                       <span 
@@ -494,12 +492,12 @@ const Analysis = () => {
                   onClick={() => navigate('/history')}
                   className="mr-2"
                 >
-                  {t("results.viewHistory")}
+                  View History
                 </Button>
                 <Button 
                   onClick={() => navigate('/dashboard')}
                 >
-                  {t("results.goToDashboard")}
+                  Go to Dashboard
                 </Button>
               </div>
             </Card>

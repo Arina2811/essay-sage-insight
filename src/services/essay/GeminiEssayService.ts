@@ -6,10 +6,10 @@ export class GeminiEssayService {
   /**
    * Analyze an essay using the Gemini API
    */
-  static async analyzeWithGemini(essayText: string, language?: string): Promise<EssayAnalysisResult> {
+  static async analyzeWithGemini(essayText: string): Promise<EssayAnalysisResult> {
     try {
       // First, perform the main essay analysis
-      const analysisResponse = await GeminiService.analyzeEssay(essayText, language);
+      const analysisResponse = await GeminiService.analyzeEssay(essayText);
       
       if (analysisResponse.status === 'error') {
         throw new Error(analysisResponse.errorMessage || "Failed to analyze essay with AI");
@@ -19,7 +19,7 @@ export class GeminiEssayService {
       const analysisResult = JSON.parse(analysisResponse.text);
       
       // Then, check for plagiarism
-      const plagiarismResponse = await GeminiService.detectPlagiarism(essayText, language);
+      const plagiarismResponse = await GeminiService.detectPlagiarism(essayText);
       let plagiarismResult;
       
       if (plagiarismResponse.status === 'success') {

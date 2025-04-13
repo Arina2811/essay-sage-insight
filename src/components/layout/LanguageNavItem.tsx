@@ -1,10 +1,5 @@
 
-import { LanguageSelector } from '@/components/ui/language-selector';
-
+// This component is no longer used for language selection
 export const LanguageNavItem = () => {
-  return (
-    <div className="mr-4">
-      <LanguageSelector />
-    </div>
-  );
+  return null;
 };
