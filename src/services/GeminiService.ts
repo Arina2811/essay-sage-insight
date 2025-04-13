@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 
 // This key would typically be stored in environment variables or Supabase secrets
@@ -12,6 +11,7 @@ export interface GeminiRequestOptions {
   topP?: number;
   topK?: number;
   feedbackLevel?: 'lenient' | 'moderate' | 'strict';
+  language?: string;
 }
 
 export interface GeminiResponse {
@@ -101,7 +101,7 @@ export class GeminiService {
       const feedbackLevel = options.feedbackLevel || this.getFeedbackLevel();
       let prompt = options.prompt;
       
-      // Add feedback level instructions
+      // Add feedback level instructions and language instructions
       if (prompt.includes("academic essay") || prompt.includes("analyze")) {
         const levelInstructions = {
           'lenient': "Provide gentle, positive feedback focusing only on major improvements. Highlight strengths and offer constructive suggestions for the most important issues.",
@@ -110,6 +110,11 @@ export class GeminiService {
         };
         
         prompt = `${prompt}\n\nFeedback level: ${feedbackLevel}. ${levelInstructions[feedbackLevel]}`;
+        
+        // Add language instruction if provided
+        if (options.language && options.language !== 'en') {
+          prompt += `\n\nPlease provide your analysis in ${options.language} language.`;
+        }
       }
       
       const response = await fetch(
@@ -181,6 +186,11 @@ export class GeminiService {
       };
       
       prompt = `${prompt}\n\nFeedback level: ${feedbackLevel}. ${levelInstructions[feedbackLevel]}`;
+      
+      // Add language instruction if provided
+      if (options.language && options.language !== 'en') {
+        prompt += `\n\nPlease provide your analysis in ${options.language} language.`;
+      }
     }
     
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -222,7 +232,7 @@ export class GeminiService {
     };
   }
 
-  static async analyzeEssay(essayText: string): Promise<GeminiResponse> {
+  static async analyzeEssay(essayText: string, language?: string): Promise<GeminiResponse> {
     const feedbackLevel = this.getFeedbackLevel();
     
     return this.generateContent({
@@ -324,10 +334,11 @@ export class GeminiService {
       ${essayText}`,
       temperature: 0.3, // Lower temperature for more structured analysis
       feedbackLevel: feedbackLevel,
+      language: language
     });
   }
 
-  static async detectPlagiarism(text: string): Promise<GeminiResponse> {
+  static async detectPlagiarism(text: string, language?: string): Promise<GeminiResponse> {
     return this.generateContent({
       prompt: `Analyze the following text for potential plagiarism. Identify any common academic phrases, widely used expressions, or potential verbatim copies that might need citation. Do not falsely flag original content.
       
@@ -348,6 +359,7 @@ export class GeminiService {
       
       ${text}`,
       temperature: 0.2, // Lower temperature for more consistent response format
+      language: language
     });
   }
 }
