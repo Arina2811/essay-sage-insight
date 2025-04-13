@@ -81,12 +81,26 @@ export class EssayAnalysisService {
     if (openAIKey) {
       console.log("Using OpenAI for enhanced essay analysis");
       // Placeholder for OpenAI-specific client-side analysis
-      // For now, we'll use the same GeminiEssayService which will use OpenAI
-      // if the key is available (through the updated GeminiService)
-      return await GeminiEssayService.analyzeWithGemini(essayText);
+      try {
+        return await GeminiEssayService.analyzeWithGemini(essayText);
+      } catch (error) {
+        console.error("OpenAI analysis failed, trying Gemini:", error);
+        if (geminiKey) {
+          return await GeminiEssayService.analyzeWithGemini(essayText);
+        }
+        // If both OpenAI and Gemini fail, use BERT/BART
+        throw error;
+      }
     } else if (geminiKey) {
       console.log("Using Gemini for enhanced essay analysis");
-      return await GeminiEssayService.analyzeWithGemini(essayText);
+      try {
+        return await GeminiEssayService.analyzeWithGemini(essayText);
+      } catch (error) {
+        console.error("Gemini analysis failed, using BERT/BART fallback:", error);
+        // If Gemini fails, use BERT/BART
+        const plagiarismResult = await PlagiarismService.checkPlagiarism(essayText);
+        return await EssayStructureService.fallbackBertBartAnalysis(essayText, plagiarismResult);
+      }
     } else {
       // No API keys, use BERT/BART-based analysis
       console.log("No AI API keys, using BERT/BART for analysis");

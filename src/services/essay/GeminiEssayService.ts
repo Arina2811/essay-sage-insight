@@ -15,8 +15,15 @@ export class GeminiEssayService {
         throw new Error(analysisResponse.errorMessage || "Failed to analyze essay with AI");
       }
       
-      // Parse the JSON response
-      const analysisResult = JSON.parse(analysisResponse.text);
+      // Clean and parse the JSON response to handle markdown formatted responses
+      const cleanedText = analysisResponse.text
+        .replace(/```json\s*/g, '')
+        .replace(/```\s*$/g, '')
+        .replace(/```/g, '')
+        .trim();
+      
+      // Parse the cleaned JSON response
+      const analysisResult = JSON.parse(cleanedText);
       
       // Then, check for plagiarism
       const plagiarismResponse = await GeminiService.detectPlagiarism(essayText);
@@ -24,7 +31,14 @@ export class GeminiEssayService {
       
       if (plagiarismResponse.status === 'success') {
         try {
-          plagiarismResult = JSON.parse(plagiarismResponse.text);
+          // Clean plagiarism response as well
+          const cleanedPlagiarismText = plagiarismResponse.text
+            .replace(/```json\s*/g, '')
+            .replace(/```\s*$/g, '')
+            .replace(/```/g, '')
+            .trim();
+            
+          plagiarismResult = JSON.parse(cleanedPlagiarismText);
         } catch (error) {
           console.error("Error parsing plagiarism result:", error);
           // Default values if parsing fails
