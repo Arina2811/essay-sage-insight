@@ -362,4 +362,28 @@ export class GeminiService {
       language: language
     });
   }
+
+  static async generateResearchConclusion(topic: string, mainFindings: string[]): Promise<GeminiResponse> {
+    const prompt = `Generate a detailed and comprehensive 150-200 word conclusion for a research paper that:
+
+1. Effectively summarizes the key findings
+2. Addresses the research significance
+3. Discusses broader implications
+4. Suggests future research directions
+5. Ends with a strong closing statement
+
+Use academic language and maintain a formal tone. Make the conclusion impactful and memorable while staying within 150-200 words.
+
+Main findings to incorporate:
+${mainFindings.map((finding, index) => `${index + 1}. ${finding}`).join('\n')}
+
+Topic: ${topic}`;
+
+    return this.generateContent({
+      prompt,
+      temperature: 0.7,
+      maxOutputTokens: 500,
+      feedbackLevel: 'strict'
+    });
+  }
 }
