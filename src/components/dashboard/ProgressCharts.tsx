@@ -5,6 +5,7 @@ import {
 } from "recharts";
 import { Card } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Loader2 } from "lucide-react";
 
 interface ProgressData {
   date: string;
