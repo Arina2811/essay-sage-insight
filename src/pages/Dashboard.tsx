@@ -1,21 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  Legend
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  BarChart, Bar, PieChart, Pie, Cell, Legend, RadarChart, 
+  PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from "recharts";
 import { 
   ChartContainer, 
@@ -26,13 +15,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EssayProgressService } from "@/services/EssayProgressService";
 import { SupabaseEssayService } from "@/services/SupabaseEssayService";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, BookOpen, Brain, Target, CheckCircle2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 const Dashboard = () => {
   const [weeklyFeedback, setWeeklyFeedback] = useState("Loading your personalized feedback...");
-  
-  // Fetch weekly progress data
+
   const { 
     data: weeklyProgressData = [], 
     isLoading: isLoadingWeekly 
@@ -41,8 +29,7 @@ const Dashboard = () => {
     queryFn: EssayProgressService.getWeeklyProgress,
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
-  
-  // Fetch monthly progress data
+
   const { 
     data: monthlyProgressData = [], 
     isLoading: isLoadingMonthly 
@@ -51,8 +38,7 @@ const Dashboard = () => {
     queryFn: EssayProgressService.getMonthlyProgress,
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
-  
-  // Fetch recent essays
+
   const { 
     data: recentEssays = [], 
     isLoading: isLoadingEssays 
@@ -62,7 +48,6 @@ const Dashboard = () => {
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
-  // Format data for charts
   const progressData = weeklyProgressData.map(item => ({
     date: `Week ${item.week}`,
     score: item.avgScore
@@ -84,12 +69,11 @@ const Dashboard = () => {
   const COLORS = ["#4f46e5", "#f97316", "#06b6d4", "#10b981", "#8b5cf6"];
   const PIE_COLORS = ["#10b981", "#f97316"];
 
-  // Calculate stats based on real data
   const essayCount = recentEssays.length;
   const averageScore = recentEssays.length > 0 
     ? Math.round(recentEssays.reduce((sum, essay) => sum + (essay.analysis?.score || 0), 0) / recentEssays.length) 
     : 0;
-  
+
   const stats = [
     { label: "Essays Analyzed", value: essayCount.toString() },
     { label: "Average Score", value: `${averageScore}/100` },
@@ -97,7 +81,6 @@ const Dashboard = () => {
     { label: "Weekly Progress", value: weeklyProgressData.length > 0 ? `${weeklyProgressData[0].count} essays` : "0 essays" },
   ];
 
-  // Get skills data from the most recent essay
   const latestEssay = recentEssays[0];
   const skills = latestEssay?.analysis ? [
     { name: "Structure", progress: latestEssay.analysis.structure.score },
@@ -111,7 +94,43 @@ const Dashboard = () => {
     { name: "Argumentation", progress: 68 },
   ];
 
-  // Fetch weekly feedback
+  const aiDetectionScore = recentEssays[0]?.analysis?.aiDetection?.score || 0;
+  const readabilityScore = recentEssays[0]?.analysis?.readability?.score || 0;
+  const creativityScore = recentEssays[0]?.analysis?.creativity?.score || 0;
+  const plagiarismScore = 100 - (recentEssays[0]?.analysis?.plagiarism?.score || 0);
+
+  const advancedStats = [
+    { 
+      label: "AI Detection Score", 
+      value: `${aiDetectionScore}%`,
+      icon: <Brain className="h-5 w-5 text-purple-500" />
+    },
+    { 
+      label: "Readability Grade", 
+      value: recentEssays[0]?.analysis?.readability?.gradeLevel || "N/A",
+      icon: <BookOpen className="h-5 w-5 text-blue-500" />
+    },
+    { 
+      label: "Creativity Index", 
+      value: `${creativityScore}%`,
+      icon: <Target className="h-5 w-5 text-green-500" />
+    },
+    { 
+      label: "Originality Score", 
+      value: `${plagiarismScore}%`,
+      icon: <CheckCircle2 className="h-5 w-5 text-amber-500" />
+    }
+  ];
+
+  const competencyData = [
+    { subject: 'Structure', A: latestEssay?.analysis?.structure?.score || 0 },
+    { subject: 'Style', A: latestEssay?.analysis?.style?.score || 0 },
+    { subject: 'Thesis', A: latestEssay?.analysis?.thesis?.score || 0 },
+    { subject: 'Citations', A: latestEssay?.analysis?.citations?.count > 0 ? 70 : 30 },
+    { subject: 'Creativity', A: latestEssay?.analysis?.creativity?.score || 0 },
+    { subject: 'Readability', A: latestEssay?.analysis?.readability?.score || 0 }
+  ];
+
   useEffect(() => {
     const fetchFeedback = async () => {
       try {
@@ -126,10 +145,8 @@ const Dashboard = () => {
     fetchFeedback();
   }, []);
 
-  // Set up realtime tracking
   useEffect(() => {
     const cleanup = EssayProgressService.setupRealtimeTracking((payload) => {
-      // When a new essay is added, show toast notification
       if (payload.eventType === 'INSERT') {
         toast.success("New essay analysis added!", {
           description: "Your dashboard has been updated with the latest data."
@@ -267,6 +284,82 @@ const Dashboard = () => {
                   <Progress value={skill.progress} className="h-2" />
                 </div>
               ))}
+            </div>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {advancedStats.map((stat) => (
+            <Card key={stat.label} className="p-6 glass">
+              <div className="flex items-center gap-3">
+                {stat.icon}
+                <div>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="text-2xl font-bold mt-1">{stat.value}</p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        <Card className="p-6 glass">
+          <h2 className="text-lg font-semibold mb-4">Writing Competencies Overview</h2>
+          <div className="h-[400px]">
+            <ChartContainer
+              config={{
+                score: { color: "hsl(var(--primary))" },
+                grid: { color: "hsl(var(--border))" }
+              }}
+            >
+              <RadarChart data={competencyData}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="subject" />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                <Radar
+                  name="Score"
+                  dataKey="A"
+                  stroke="hsl(var(--primary))"
+                  fill="hsl(var(--primary))"
+                  fillOpacity={0.3}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+              </RadarChart>
+            </ChartContainer>
+          </div>
+        </Card>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="p-6 glass">
+            <h2 className="text-lg font-semibold mb-4">AI Detection Analysis</h2>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span>AI Probability</span>
+                <span className="font-medium">{aiDetectionScore}%</span>
+              </div>
+              <Progress value={aiDetectionScore} className="h-2" />
+              {latestEssay?.analysis?.aiDetection?.feedback && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  {latestEssay.analysis.aiDetection.feedback}
+                </p>
+              )}
+            </div>
+          </Card>
+
+          <Card className="p-6 glass">
+            <h2 className="text-lg font-semibold mb-4">Originality Check</h2>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span>Original Content</span>
+                <span className="font-medium">{plagiarismScore}%</span>
+              </div>
+              <Progress value={plagiarismScore} className="h-2" />
+              {latestEssay?.analysis?.plagiarism?.passages?.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm text-muted-foreground">
+                    {latestEssay.analysis.plagiarism.passages.length} potential matches found
+                  </p>
+                </div>
+              )}
             </div>
           </Card>
         </div>
