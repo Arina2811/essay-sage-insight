@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,8 @@ import { Link } from "react-router-dom";
 import { ProfileSettings } from "@/components/settings/ProfileSettings";
 import { FeedbackSettings } from "@/components/settings/FeedbackSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const Settings = () => {
   const { toast } = useToast();

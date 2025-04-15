@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -57,7 +58,7 @@ export const FeedbackSettings = () => {
         .from('user_settings')
         .upsert({
           user_id: user.id,
-          feedback_level,
+          feedback_level: feedbackLevel,
           use_bert_analysis: useBertAnalysis,
           use_bart_generation: useBartGeneration,
           bert_sensitivity: bertSensitivity,
