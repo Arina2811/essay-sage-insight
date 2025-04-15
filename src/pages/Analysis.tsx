@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -5,7 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
-import { Loader2, FileCheck, AlertTriangle, CheckCircle, Sparkles, BookOpen, Bot, Lightbulb, Users, HeartPulse } from "lucide-react";
+import { 
+  Loader2, 
+  FileCheck, 
+  AlertTriangle, 
+  CheckCircle, 
+  Sparkles, 
+  BookOpen, 
+  Bot, 
+  Lightbulb, 
+  Users, 
+  HeartPulse,
+  BadgeAlert,
+  Pencil
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EssayAnalysisService } from "@/services/EssayAnalysisService";
@@ -284,15 +298,32 @@ const Analysis = () => {
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="text-sm text-muted-foreground">Verdict:</span>
                     {analysisResult.aiDetection?.isAiGenerated ? (
-                      <span className="text-sm font-medium text-red-500">Likely AI-generated</span>
+                      <span className="text-sm font-medium text-red-500 flex items-center">
+                        <BadgeAlert className="h-4 w-4 mr-1" />
+                        Likely AI-generated
+                      </span>
                     ) : (
-                      <span className="text-sm font-medium text-green-500">Likely human-written</span>
+                      <span className="text-sm font-medium text-green-500 flex items-center">
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Likely human-written
+                      </span>
                     )}
                     <span className="text-xs text-muted-foreground">
                       ({analysisResult.aiDetection?.confidence || 0}% confidence)
                     </span>
                   </div>
                   <p className="text-muted-foreground">{analysisResult.aiDetection?.feedback || "No AI detection feedback available."}</p>
+                  
+                  {analysisResult.aiDetection?.markers && analysisResult.aiDetection.markers.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-sm font-medium mb-2">Key Indicators:</h4>
+                      <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                        {analysisResult.aiDetection.markers.map((marker, idx) => (
+                          <li key={idx}>{marker}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </TabsContent>
                 
                 <TabsContent value="vocabulary" className="space-y-4">
@@ -307,7 +338,50 @@ const Analysis = () => {
                     value={analysisResult.vocabulary?.score || 0} 
                     className="h-2 mb-2"
                   />
+                  
+                  {analysisResult.vocabulary?.academicLevel && (
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className="text-sm text-muted-foreground">Academic Level:</span>
+                      <span className="text-sm font-medium capitalize">{analysisResult.vocabulary.academicLevel}</span>
+                      {analysisResult.vocabulary.uniqueness && (
+                        <span className="text-xs text-muted-foreground ml-4">
+                          Word Uniqueness: {Math.round(analysisResult.vocabulary.uniqueness)}%
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  
                   <p className="text-muted-foreground">{analysisResult.vocabulary?.feedback || "No vocabulary feedback available."}</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    {analysisResult.vocabulary?.strengths && analysisResult.vocabulary.strengths.length > 0 && (
+                      <div className="bg-muted/50 p-4 rounded-md">
+                        <h4 className="font-medium text-sm mb-2 text-green-600 flex items-center">
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Strengths
+                        </h4>
+                        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                          {analysisResult.vocabulary.strengths.map((strength, index) => (
+                            <li key={index}>{strength}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {analysisResult.vocabulary?.improvementAreas && analysisResult.vocabulary.improvementAreas.length > 0 && (
+                      <div className="bg-muted/50 p-4 rounded-md">
+                        <h4 className="font-medium text-sm mb-2 text-amber-600 flex items-center">
+                          <AlertTriangle className="h-4 w-4 mr-1" />
+                          Areas for Improvement
+                        </h4>
+                        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                          {analysisResult.vocabulary.improvementAreas.map((area, index) => (
+                            <li key={index}>{area}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                   
                   {analysisResult.vocabulary?.advanced && analysisResult.vocabulary.advanced.length > 0 && (
                     <>
@@ -317,6 +391,32 @@ const Analysis = () => {
                           <span key={index} className="px-2 py-1 bg-muted rounded-md text-xs">
                             {term}
                           </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  
+                  {analysisResult.vocabulary?.typos && analysisResult.vocabulary.typos.length > 0 && (
+                    <>
+                      <h4 className="font-medium text-sm mt-4 mb-2 flex items-center">
+                        <Pencil className="h-4 w-4 mr-1 text-red-500" />
+                        Potential Spelling Errors:
+                      </h4>
+                      <div className="space-y-3">
+                        {analysisResult.vocabulary.typos.map((typo, index) => (
+                          <div key={index} className="bg-red-50 dark:bg-red-900/20 p-3 rounded-md text-sm">
+                            <div className="mb-1">
+                              <span className="font-semibold text-red-600 dark:text-red-400">{typo.word}</span>
+                              <span className="text-muted-foreground"> in context: </span>
+                              <span className="italic">"{typo.context}"</span>
+                            </div>
+                            {typo.suggestions.length > 0 && (
+                              <div>
+                                <span className="text-xs text-muted-foreground">Suggested corrections: </span>
+                                <span className="text-xs font-medium">{typo.suggestions.join(', ')}</span>
+                              </div>
+                            )}
+                          </div>
                         ))}
                       </div>
                     </>

@@ -8,6 +8,8 @@ import { GeminiEssayService } from "./essay/GeminiEssayService";
 import { EssayStorageService } from "./essay/EssayStorageService";
 import { SupabaseEssayService } from "./SupabaseEssayService";
 import { supabase } from "@/integrations/supabase/client";
+import { ImprovedAIDetectionService } from "./essay/ImprovedAIDetectionService";
+import { VocabularyAnalysisService } from "./essay/VocabularyAnalysisService";
 
 export class EssayAnalysisService {
   static async analyzeEssay(essayText: string): Promise<EssayAnalysisResult> {
@@ -27,7 +29,26 @@ export class EssayAnalysisService {
           if (error) throw error;
           
           console.log(`Received analysis from Supabase Edge Function (using ${data.provider || 'unknown'} model):`, data);
-          return data.analysis;
+          
+          // Enhance the AI detection with our improved service
+          const enhancedAIDetection = await ImprovedAIDetectionService.analyzeText(essayText);
+          
+          // Enhance vocabulary analysis
+          const enhancedVocabulary = VocabularyAnalysisService.analyzeVocabulary(essayText);
+          
+          // Merge the analysis results with our enhanced detection
+          const enhancedAnalysis = {
+            ...data.analysis,
+            aiDetection: {
+              score: enhancedAIDetection.isAiGenerated ? 40 : 85,
+              isAiGenerated: enhancedAIDetection.isAiGenerated,
+              confidence: enhancedAIDetection.confidence,
+              feedback: enhancedAIDetection.feedback
+            },
+            vocabulary: enhancedVocabulary
+          };
+          
+          return enhancedAnalysis;
         } catch (edgeFunctionError) {
           console.error("Edge function error, falling back to client-side AI:", edgeFunctionError);
           // Fall back to client-side AI models if edge function fails
@@ -78,15 +99,42 @@ export class EssayAnalysisService {
     // Check if Gemini API key is available
     const geminiKey = GeminiService.getApiKey();
     
+    // Apply enhanced AI detection and vocabulary analysis
+    const enhancedAIDetection = await ImprovedAIDetectionService.analyzeText(essayText);
+    const enhancedVocabulary = VocabularyAnalysisService.analyzeVocabulary(essayText);
+    
     if (openAIKey) {
       console.log("Using OpenAI for enhanced essay analysis");
-      // Placeholder for OpenAI-specific client-side analysis
       try {
-        return await GeminiEssayService.analyzeWithGemini(essayText);
+        const baseAnalysis = await GeminiEssayService.analyzeWithGemini(essayText);
+        
+        // Merge with enhanced detection and vocabulary
+        return {
+          ...baseAnalysis,
+          aiDetection: {
+            score: enhancedAIDetection.isAiGenerated ? 40 : 85,
+            isAiGenerated: enhancedAIDetection.isAiGenerated,
+            confidence: enhancedAIDetection.confidence,
+            feedback: enhancedAIDetection.feedback
+          },
+          vocabulary: enhancedVocabulary
+        };
       } catch (error) {
         console.error("OpenAI analysis failed, trying Gemini:", error);
         if (geminiKey) {
-          return await GeminiEssayService.analyzeWithGemini(essayText);
+          const baseAnalysis = await GeminiEssayService.analyzeWithGemini(essayText);
+          
+          // Merge with enhanced detection and vocabulary
+          return {
+            ...baseAnalysis,
+            aiDetection: {
+              score: enhancedAIDetection.isAiGenerated ? 40 : 85,
+              isAiGenerated: enhancedAIDetection.isAiGenerated,
+              confidence: enhancedAIDetection.confidence,
+              feedback: enhancedAIDetection.feedback
+            },
+            vocabulary: enhancedVocabulary
+          };
         }
         // If both OpenAI and Gemini fail, use BERT/BART
         throw error;
@@ -94,18 +142,54 @@ export class EssayAnalysisService {
     } else if (geminiKey) {
       console.log("Using Gemini for enhanced essay analysis");
       try {
-        return await GeminiEssayService.analyzeWithGemini(essayText);
+        const baseAnalysis = await GeminiEssayService.analyzeWithGemini(essayText);
+        
+        // Merge with enhanced detection and vocabulary
+        return {
+          ...baseAnalysis,
+          aiDetection: {
+            score: enhancedAIDetection.isAiGenerated ? 40 : 85,
+            isAiGenerated: enhancedAIDetection.isAiGenerated,
+            confidence: enhancedAIDetection.confidence,
+            feedback: enhancedAIDetection.feedback
+          },
+          vocabulary: enhancedVocabulary
+        };
       } catch (error) {
         console.error("Gemini analysis failed, using BERT/BART fallback:", error);
         // If Gemini fails, use BERT/BART
         const plagiarismResult = await PlagiarismService.checkPlagiarism(essayText);
-        return await EssayStructureService.fallbackBertBartAnalysis(essayText, plagiarismResult);
+        const baseAnalysis = await EssayStructureService.fallbackBertBartAnalysis(essayText, plagiarismResult);
+        
+        // Merge with enhanced detection and vocabulary
+        return {
+          ...baseAnalysis,
+          aiDetection: {
+            score: enhancedAIDetection.isAiGenerated ? 40 : 85,
+            isAiGenerated: enhancedAIDetection.isAiGenerated,
+            confidence: enhancedAIDetection.confidence,
+            feedback: enhancedAIDetection.feedback
+          },
+          vocabulary: enhancedVocabulary
+        };
       }
     } else {
       // No API keys, use BERT/BART-based analysis
       console.log("No AI API keys, using BERT/BART for analysis");
       const plagiarismResult = await PlagiarismService.checkPlagiarism(essayText);
-      return await EssayStructureService.fallbackBertBartAnalysis(essayText, plagiarismResult);
+      const baseAnalysis = await EssayStructureService.fallbackBertBartAnalysis(essayText, plagiarismResult);
+      
+      // Merge with enhanced detection and vocabulary
+      return {
+        ...baseAnalysis,
+        aiDetection: {
+          score: enhancedAIDetection.isAiGenerated ? 40 : 85,
+          isAiGenerated: enhancedAIDetection.isAiGenerated,
+          confidence: enhancedAIDetection.confidence,
+          feedback: enhancedAIDetection.feedback
+        },
+        vocabulary: enhancedVocabulary
+      };
     }
   }
 

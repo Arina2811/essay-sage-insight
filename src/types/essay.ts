@@ -47,12 +47,22 @@ export interface EssayAnalysisResult {
     isAiGenerated: boolean;
     confidence: number;
     feedback: string;
+    markers?: string[]; // Added for enhanced AI detection
   };
   vocabulary: {
     score: number;
     feedback: string;
     advanced: string[];
     suggestions: string[];
+    uniqueness?: number; // Added for enhanced vocabulary analysis
+    academicLevel?: "basic" | "intermediate" | "advanced" | "expert"; // Added for enhanced vocabulary analysis
+    improvementAreas?: string[]; // Added for enhanced vocabulary analysis
+    strengths?: string[]; // Added for enhanced vocabulary analysis
+    typos?: Array<{ // Added for enhanced typo detection
+      word: string;
+      suggestions: string[];
+      context: string;
+    }>;
   };
   targetAudience: {
     suitable: string[];
