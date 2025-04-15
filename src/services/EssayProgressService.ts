@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { EssayData, EssayAnalysisResult } from "@/types/essay";
@@ -26,9 +25,10 @@ export class EssayProgressService {
       }
       
       // Get weekly progress data by calculating the week from created_at
+      // Fetch complete analysis_result and other fields
       const { data, error } = await supabase
         .from('essay_analyses')
-        .select('created_at, overall_score')
+        .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
         
@@ -54,7 +54,6 @@ export class EssayProgressService {
         if (!item || !item.created_at) return;
         
         const date = new Date(item.created_at);
-        // Get ISO week number (1-53)
         const week = getWeekNumber(date);
         
         if (!weeklyData[week]) {
