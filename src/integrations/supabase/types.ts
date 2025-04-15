@@ -66,6 +66,60 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          analysis_complete_alerts: boolean | null
+          bart_academic_tone: number | null
+          bart_creativity: number | null
+          bert_context_depth: number | null
+          bert_sensitivity: number | null
+          created_at: string
+          email_notifications: boolean | null
+          feedback_level: string
+          id: string
+          institution: string | null
+          updated_at: string
+          use_bart_generation: boolean | null
+          use_bert_analysis: boolean | null
+          user_id: string
+          weekly_summary: boolean | null
+        }
+        Insert: {
+          analysis_complete_alerts?: boolean | null
+          bart_academic_tone?: number | null
+          bart_creativity?: number | null
+          bert_context_depth?: number | null
+          bert_sensitivity?: number | null
+          created_at?: string
+          email_notifications?: boolean | null
+          feedback_level?: string
+          id?: string
+          institution?: string | null
+          updated_at?: string
+          use_bart_generation?: boolean | null
+          use_bert_analysis?: boolean | null
+          user_id: string
+          weekly_summary?: boolean | null
+        }
+        Update: {
+          analysis_complete_alerts?: boolean | null
+          bart_academic_tone?: number | null
+          bart_creativity?: number | null
+          bert_context_depth?: number | null
+          bert_sensitivity?: number | null
+          created_at?: string
+          email_notifications?: boolean | null
+          feedback_level?: string
+          id?: string
+          institution?: string | null
+          updated_at?: string
+          use_bart_generation?: boolean | null
+          use_bert_analysis?: boolean | null
+          user_id?: string
+          weekly_summary?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
